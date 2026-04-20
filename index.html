@@ -560,8 +560,8 @@
 // ═══════════════════════════════════════════════════
 // CONFIGURAZIONE — sostituisci questi valori
 // ═══════════════════════════════════════════════════
-const JSONBIN_API_KEY = '$2a$10$c3gla4n68LrMjjDaWty4XOrfayVrMdU5nW/MSmyfpWjQfrSwIkz/2';   // es. $2a$10$...
-const JSONBIN_BIN_ID  = '69e5ed2e36566621a8d0d388';    // es. 664abc123...
+const JSONBIN_API_KEY = 'JSONBIN_API_KEY';   // es. $2a$10$...
+const JSONBIN_BIN_ID  = 'JSONBIN_BIN_ID';    // es. 664abc123...
 // ═══════════════════════════════════════════════════
 
 const BASE_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
@@ -582,80 +582,80 @@ function initials(name) {
 
 const films = [
   { day:"Ven 24 Apr", label:"Ven 24/4", films:[
-    {t:"14:00",title:"HULA GIRLS",syn:"Giappone 2006. In un villaggio minerario del Tohoku in crisi, giovani donne si allenano per diventare ballerine di hula e salvare la comunità. Dramma commovente ispirato a una storia vera."},
-    {t:"16:20",title:"UNDER THE OPEN SKY",syn:"Giappone 2020. Un ex yakuza scarcerato dopo quindici anni tenta di reinserirsi nella società, cercando di costruire una vita nuova fuori dall'unico mondo che ha sempre conosciuto."},
-    {t:"19:15",title:"WE ARE ALL STRANGERS",syn:"Singapore 2026 (Anthony Chen). Film d'apertura FEFF28. Due matrimoni mettono in crisi le vite parallele di un padre e un figlio, ridisegnando il fragile equilibrio tra loro mentre entrambi affrontano amore, perdita e responsabilità. Ritratto di una Singapore moderna tra conformismo e tradizione. Primo film singaporiano in competizione al Berlino."},
-    {t:"22:30",title:"KUNG FU",syn:"Hong Kong 2004 (Stephen Chow). Negli anni '40 a Shanghai, un aspirante gangster si scontra con maestri di arti marziali nascosti in un caseggiato popolare. Commedia d'azione irresistibile."}
+    {t:"14:00",title:"HULA GIRLS",syn:"Giappone 2006 (classico restaurato). In un villaggio minerario del Tohoku in crisi, giovani donne si allenano per diventare ballerine di hula per salvare la comunità trasformando la miniera in un parco termale. Dramma commovente ispirato a una storia vera, di Lee Sang-il."},
+    {t:"16:20",title:"UNDER THE OPEN SKY",syn:"Giappone 2020 (Nishikawa Miwa). Un ex yakuza scarcerato dopo quindici anni tenta di reinserirsi nella società. Fuori concorso, nella retrospettiva dedicata a Koji Yakusho."},
+    {t:"19:15",title:"WE ARE ALL STRANGERS",syn:"Singapore 2026 (Anthony Chen). Film d'apertura FEFF28. Due matrimoni mettono in crisi le vite parallele di un padre e un figlio, ridisegnando il fragile equilibrio tra loro mentre entrambi affrontano amore, perdita e responsabilità. Primo film singaporiano in competizione al Festival di Berlino."},
+    {t:"22:30",title:"KUNG FU",syn:"Taiwan 2026 (Giddens Ko). Una dichiarazione d'amore folle e spettacolare al cinema wuxia. Prima internazionale al festival."}
   ]},
   { day:"Sab 25 Apr", label:"Sab 25/4", films:[
-    {t:"09:00",title:"THE SNOWBALL ON A SUNNY DAY",syn:"Corea del Sud 2025. Una commedia romantica sui piccoli miracoli e le coincidenze che cambiano il corso delle relazioni sentimentali in una giornata di sole inattesa."},
-    {t:"11:20",title:"AH GIRL",syn:"Singapore 2025. Ritratto generazionale di una giovane donna singaporiana che naviga aspettative familiari e identità personale in una città in rapida trasformazione."},
-    {t:"14:00",title:"5 CENTIMETERS PER SECOND",syn:"Giappone 2007 (Makoto Shinkai). Tre storie sulla distanza e il tempo che separano due amici d'infanzia nel corso degli anni. Animazione poetica e visivamente mozzafiato."},
-    {t:"16:15",title:"WE'RE NOTHING AT ALL",syn:"Giappone 2022. Due giovani con vite ai margini si incontrano per caso e trovano nell'altro una forma inaspettata di connessione. Dramma minimalista sull'isolamento."},
-    {t:"19:00",title:"PERFECT DAYS",syn:"Giappone/Germania 2023 (Wim Wenders). Hirayama, addetto alle pulizie dei bagni pubblici di Tokyo, conduce una vita di quieta routine e profonda attenzione ai piccoli piaceri. Premiato a Cannes con Koji Yakusho."},
-    {t:"21:40",title:"GHOST IN THE CELL",syn:"Corea del Sud 2025. Thriller carcerario: un detenuto inizia a ricevere messaggi impossibili dall'interno della prigione, innescando eventi che mettono in discussione la realtà stessa."},
-    {t:"23:40",title:"THA RAE: THE EXORCIST",syn:"Thailandia 2025. Horror soprannaturale ambientato in un villaggio rurale dove un esorcista affronta forze oscure legate ad antichi rituali locali."}
+    {t:"09:00",title:"THE SNOWBALL ON A SUNNY DAY",syn:"Hong Kong 2026 (Philip Yung). Commedia scombinata in stile familiare, con toni brillanti e situazioni impreviste che si moltiplicano come una palla di neve."},
+    {t:"11:20",title:"AH GIRL",syn:"Singapore 2026 (Ang Geck Priscilla). I bambini osservano il mondo degli adulti con occhi impietosi. Dramma intimo su famiglia e infanzia nella Singapore contemporanea."},
+    {t:"14:00",title:"5 CENTIMETERS PER SECOND",syn:"Giappone 2025 (Okuyama Yoshiyuki). Attenzione: non è il film di Shinkai del 2007 — è un nuovo film omonimo. Un appuntamento attraverso il tempo, un dramma sulle distanze e i momenti mancati."},
+    {t:"16:15",title:"WE'RE NOTHING AT ALL",syn:"Hong Kong 2026 (Herman Yau). Una tragedia su un attentato esplosivo portata al punto di ebollizione. Dramma ad alta tensione con risvolti sociali."},
+    {t:"19:00",title:"PERFECT DAYS",syn:"Giappone/Germania 2023 (Wim Wenders). Hirayama, addetto alle pulizie dei bagni pubblici di Tokyo, conduce una vita di quieta routine e profonda attenzione ai piccoli piaceri. Fuori concorso, nella retrospettiva dedicata a Koji Yakusho, vincitore del premio come migliore attore a Cannes 2023."},
+    {t:"21:40",title:"GHOST IN THE CELL",syn:"Indonesia 2026 (Joko Anwar). Arte e fantasmi si incontrano in un carcere. Il regista di Impetigore esplora il soprannaturale in un contesto claustrofobico e opprimente."},
+    {t:"23:40",title:"THA RAE: THE EXORCIST",syn:"Thailandia 2025 (Taweewat Wantha). Un'alleanza di esorcisti affronta forze oscure in un villaggio rurale tailandese. Horror soprannaturale radicato nel folklore locale."}
   ]},
   { day:"Dom 26 Apr", label:"Dom 26/4", films:[
-    {t:"09:00",title:"LINKA LINKA",syn:"Mongolia 2025. Un viaggio on the road attraverso le steppe mongole che diventa una riflessione sulla tradizione nomade e la modernità che avanza."},
-    {t:"11:00",title:"FUJIKO",syn:"Giappone 2024. Documentario dedicato a Fujiko F. Fujio, leggendario mangaka creatore di Doraemon, esplorando la sua vita e il suo processo creativo."},
-    {t:"14:00",title:"I BLEW OUT THE CANDLES BEFORE MAKING A WISH",syn:"Taiwan 2025. Un compleanno diventa l'occasione per fare i conti con rimpianti e desideri non espressi. Dramma familiare dalla delicata sensibilità taiwanese."},
-    {t:"16:10",title:"KOKUHO",syn:"Giappone 2025. Thriller o dramma che ruota attorno a un tesoro nazionale conteso, tra identità culturale e interessi personali in gioco."},
-    {t:"19:20",title:"A FOGGY TALE",syn:"Cina 2025. Noir atmosferico ambientato in una città avvolta dalla nebbia, dove un investigatore ricostruisce una storia di tradimenti e sparizioni."},
-    {t:"21:50",title:"HIJACKED",syn:"Corea del Sud 2024. Thriller ad alta tensione: un volo dirottato, passeggeri che devono trovare il modo di sopravvivere. Spettacolo d'azione con ritmo serrato."}
+    {t:"09:00",title:"LINKA LINKA",syn:"Cina 2025 (Kangdrun). Un ritorno a casa tibetano: viaggio tra tradizione, paesaggi e memoria in un film che esplora l'identità culturale della regione himalayana."},
+    {t:"11:00",title:"FUJIKO",syn:"Giappone 2026 (Kimura Taichi). Prima mondiale. Dramma onirico sull'emancipazione femminile, con Megumi (cantante e attrice) protagonista. Una storia di potere e identità al femminile."},
+    {t:"14:00",title:"I BLEW OUT THE CANDLES BEFORE MAKING A WISH",syn:"Taiwan 2026 (Chao Koi-wang, Hu Chin-yen). Prima mondiale. Una fuga a Macao diventa il pretesto per un thriller familiare ricco di colpi di scena, tra bugie e segreti da svelare."},
+    {t:"16:10",title:"KOKUHO",syn:"Giappone 2025 (Lee Sang-il). Due vite sul palcoscenico del teatro kabuki: un dramma raffinato sull'arte, l'identità e la tradizione. Fuori concorso, special screening."},
+    {t:"19:20",title:"A FOGGY TALE",syn:"Taiwan 2025 (Chen Yu-hsun). Un'amicizia in un'epoca di terrore: ambientato probabilmente nel periodo del Terrore Bianco taiwanese, un racconto storico sull'amicizia e la sopravvivenza."},
+    {t:"21:50",title:"HIJACKED",syn:"Vietnam 2025 (Ham Tran). Azione ad alta quota e ad alta tensione: un dirottamento aereo raccontato con ritmo frenetico. Thriller d'azione vietnamita."}
   ]},
   { day:"Lun 27 Apr", label:"Lun 27/4", films:[
-    {t:"08:30",title:"NIGHT KING",syn:"Hong Kong 2025. Dramma criminale sull'ascesa e la caduta di un boss dell'underground notturno di Hong Kong."},
-    {t:"10:55",title:"SOMEONE LIKE ME",syn:"Cina 2025. Commedia romantica contemporanea sull'incontro tra due persone apparentemente opposte che scoprono di avere più in comune di quanto credano."},
-    {t:"13:00",title:"FILIPIÑANA",syn:"Filippine 2025. Racconto corale sull'identità filippina oggi, tra emigrazione, familia e le contraddizioni di un paese in cerca di sé stesso."},
-    {t:"15:00",title:"THE WORLD OF LOVE",syn:"Corea del Sud 2025. Drama romantico che esplora le diverse forme dell'amore — filiale, romantico, amicale — attraverso storie parallele."},
-    {t:"17:20",title:"THE SEOUL GUARDIANS",syn:"Corea del Sud 2024. Action movie sui generis: un gruppo improbabile di difensori della città di Seoul affronta una minaccia soprannaturale."},
-    {t:"19:15",title:"KY NAM INN",syn:"Vietnam 2025. Drama ambientato in un antico inn vietnamita che custodisce segreti di famiglia attraverso le generazioni."},
-    {t:"21:55",title:"ROAD TO VENDETTA",syn:"Hong Kong/Cina 2025. Thriller di vendetta: un uomo torna dal passato per fare i conti con chi gli ha distrutto la vita."}
+    {t:"08:30",title:"NIGHT KING",syn:"Hong Kong 2026 (Jack Ng). Un meraviglioso affresco sulla vita notturna vintage di Hong Kong. Dramma nostalgico sull'underground urbano e i suoi protagonisti."},
+    {t:"10:55",title:"SOMEONE LIKE ME",syn:"Hong Kong 2025 (Tam Wai-ching). Sessualità e disabilità al centro di un racconto delicato e coraggioso. Un film che sfida i pregiudizi con umanità e sensibilità."},
+    {t:"13:00",title:"FILIPIÑANA",syn:"Filippine 2026 (Rafael Manuel). Un balletto astratto: film sperimentale e visivamente audace sull'identità filippina, tra danza, corpo e politica."},
+    {t:"15:00",title:"THE WORLD OF LOVE",syn:"Corea del Sud 2025 (Yoon Ga-eun). Cicatrici segrete: un dramma sui traumi nascosti e le ferite invisibili che plasmano le relazioni e le vite delle persone."},
+    {t:"17:20",title:"THE SEOUL GUARDIANS",syn:"Corea del Sud 2026 (Kim Jong-woo, Kim Shin-wan, Cho Chul-young). Copertura in diretta di un colpo di stato: il primo documentario in competizione nella storia del FEFF, sulla dichiarazione della legge marziale del dicembre 2024."},
+    {t:"19:15",title:"KY NAM INN",syn:"Vietnam 2025 (Leon Le). Melodramma in stile vecchia Saigon: romantico e malinconico, ambientato negli ambienti d'epoca della città che fu, con tutta la sua poesia perduta."},
+    {t:"21:55",title:"ROAD TO VENDETTA",syn:"Hong Kong 2025 (Njo Kui-ying). Un film d'azione tutto gas e stile: vendetta, onore e adrenalina pura nel genere action di Hong Kong ai suoi livelli migliori."}
   ]},
   { day:"Mar 28 Apr", label:"Mar 28/4", films:[
-    {t:"08:30",title:"THE LAST BLOSSOM",syn:"Giappone 2025. Dramma sulla fine della vita e sulla bellezza effimera, con i ciliegi in fiore come metafora centrale del tempo che passa."},
-    {t:"10:15",title:"TAKE OFF",syn:"Corea del Sud 2025. Storia di formazione sportiva: un giovane promessa lotta contro le aspettative e i propri limiti per raggiungere il suo sogno."},
-    {t:"12:30",title:"THE SICKNESS UNTO LOVE",syn:"Taiwan 2025. Drama d'amore con sfumature esistenziali: due persone alle prese con la malattia trovano nell'altro una ragione per continuare."},
-    {t:"14:35",title:"DEEP QUIET ROOM",syn:"Giappone 2025. Dramma minimalista in uno spazio claustrofobico dove il silenzio rivela più delle parole."},
-    {t:"16:40",title:"JET LAG IN SUMMER",syn:"Cina 2025. Commedia romantica: due sconosciuti bloccati in un aeroporto durante l'estate intraprendono un viaggio emotivo inatteso."},
-    {t:"19:15",title:"MY NAME",syn:"Corea del Sud 2021. Una donna si infiltra nella polizia per vendicare la morte del padre, ma la verità è più complicata di quanto immaginasse."},
-    {t:"21:30",title:"SUZUKI = BAKUDAN",syn:"Giappone 2025. Commedia d'azione grottesca con un protagonista dal nome improbabile coinvolto in situazioni esplosive."}
+    {t:"08:30",title:"THE LAST BLOSSOM",syn:"Giappone 2025 (Kinoshita Baku). Animazione con un fiore che parla: una storia poetica e toccante sulla vita, la morte e la bellezza effimera della natura."},
+    {t:"10:15",title:"TAKE OFF",syn:"Cina 2025 (Pengfei). Il sogno cinese di Icaro: un giovane insegue un'ambizione impossibile tra cielo e terra, in un film che mescola realismo e lirismo."},
+    {t:"12:30",title:"THE SICKNESS UNTO LOVE",syn:"Giappone 2025 (Hiroki Ryuichi). Esplorare i confini dell'amore: un dramma intenso e fisico sulla relazione tra desiderio, dolore e ossessione sentimentale."},
+    {t:"14:35",title:"DEEP QUIET ROOM",syn:"Taiwan 2025 (Shen Ko-shang). Trauma e verità nascoste: un film che scava nelle ferite psicologiche con rigore e precisione, in un dramma claustrofobico e potente."},
+    {t:"16:40",title:"JET LAG IN SUMMER",syn:"Cina 2025 (Yan Kunao). Una storia di crescita da espatriato: il disorientamento di chi vive tra due culture, raccontato con leggerezza e malinconia estiva."},
+    {t:"19:15",title:"MY NAME",syn:"Corea del Sud 2026 (Chung Ji-young). Un addio impossibile: la storia del massacro di Jeju, pagina tragica della storia coreana del dopoguerra, raccontata attraverso un'identità ritrovata."},
+    {t:"21:30",title:"SUZUKI = BAKUDAN",syn:"Giappone 2025 (Nagai Akira). Un film investigativo fuori dagli schemi: indagine, mistero e umorismo nero in un thriller tutto giapponese con un protagonista esplosivo."}
   ]},
   { day:"Mer 29 Apr", label:"Mer 29/4", films:[
-    {t:"09:00",title:"A MIGHTY ADVENTURE",syn:"Cina 2025. Avventura fantastica con eroi improbabili in un mondo straordinario, tra coraggio e amicizia."},
-    {t:"10:30",title:"MIDNIGHT GIRLS",syn:"Giappone/Corea 2025. Ritratto notturno di giovani donne ai margini, tra sogni e sopravvivenza nelle metropoli asiatiche."},
-    {t:"14:00",title:"TIGER",syn:"Corea del Sud 2025. Drama su una figura imponente soprannominata 'tigre' per il carattere feroce e determinato, tra sport o crimine."},
-    {t:"16:20",title:"SUNSHINE WOMEN'S CHOIR",syn:"Giappone 2025. Commedia corale su un coro femminile amatoriale che si prepara a una gara importante, tra amicizie e riscoperta di sé."},
-    {t:"19:15",title:"90 METERS",syn:"Giappone 2025. Drama sportivo: 90 metri come distanza simbolica tra il limite umano e il sogno, in un atleta che non si arrende."},
-    {t:"21:30",title:"THE SHADOW'S EDGE",syn:"Hong Kong 2025. Thriller ambientato ai confini dell'ombra, tra spie e identità doppie in una città senza respiro."}
+    {t:"09:00",title:"A MIGHTY ADVENTURE",syn:"Hong Kong/Taiwan 2025 (Toe Yuen). Animazione silenziosa sulle meraviglie della natura: un'avventura senza parole, pura immagine e poesia visiva, per tutte le età."},
+    {t:"10:30",title:"MIDNIGHT GIRLS",syn:"Filippine 2026 (Irene Villamor). Prima mondiale. Vivere e sopravvivere a Nagoya: giovani donne filippine in Giappone cercano il loro posto tra sogni e dure realtà quotidiane."},
+    {t:"14:00",title:"TIGER",syn:"Giappone 2025 (Anshul Chauhan). Dramma LGBTQ senza compromessi: una storia di identità, coraggio e resistenza in un Giappone che fatica ad accettare la diversità."},
+    {t:"16:20",title:"SUNSHINE WOMEN'S CHOIR",syn:"Taiwan 2026 (Gavin Lin). Musical lacrimevole ambientato in carcere: un coro di donne detenute trova riscatto, sorellanza e speranza attraverso la musica."},
+    {t:"19:15",title:"90 METERS",syn:"Giappone 2026 (Nakagawa Shun). Prendersi cura con amore: un dramma delicato su cura, dedizione e i limiti fisici ed emotivi di chi assiste chi ama."},
+    {t:"21:30",title:"THE SHADOW'S EDGE",syn:"Cina 2025 (Larry Yang). Di chi sono quegli occhi? Thriller d'azione con un'identità in gioco: chi guarda, chi è guardato, chi controlla davvero la situazione."}
   ]},
   { day:"Gio 30 Apr", label:"Gio 30/4", films:[
-    {t:"09:00",title:"ANOTHER WORLD",syn:"Cina 2025. Fantascienza o fantasy: un protagonista si ritrova in una dimensione parallela che rispecchia la sua vita in modo distorto."},
-    {t:"11:05",title:"ONCE WE WERE US",syn:"Corea del Sud 2025. Drama sentimentale su una coppia che si ritrova anni dopo la rottura e deve fare i conti con ciò che erano e ciò che sono diventati."},
-    {t:"14:30",title:"UNCHAINED",syn:"Filippine 2025. Dramma sulla libertà: un individuo oppresso fisicamente o socialmente lotta per spezzare le proprie catene."},
-    {t:"16:35",title:"MEASURE IN LOVE",syn:"Giappone 2025. Drama romantico e filosofico: come si misura l'amore? Attraverso il tempo, il sacrificio, la presenza quotidiana."},
-    {t:"19:15",title:"NUMBER ONE",syn:"Corea del Sud 2025. Satira o dramma sull'ossessione coreana per il primato, il successo e la competizione a ogni costo."},
-    {t:"21:20",title:"ALL GREENS",syn:"Giappone 2025. Commedia agricola: un personaggio urbano torna alla terra e scopre un ritmo di vita completamente diverso."},
-    {t:"23:40",title:"UNIDENTIFIED MURDER",syn:"Corea del Sud 2025. Thriller poliziesco su un omicidio con movente e colpevole apparentemente impossibili da identificare."}
+    {t:"09:00",title:"ANOTHER WORLD",syn:"Hong Kong 2025 (Tommy Ng). Fantasy animato surreale: un viaggio nell'assurdo e nell'onirico, dove i confini tra realtà e immaginazione si dissolvono in immagini inventive."},
+    {t:"11:05",title:"ONCE WE WERE US",syn:"Corea del Sud 2025 (Kim Do-young). La fine di un amore: un dramma sentimentale che esplora cosa rimane di una coppia quando tutto sembra finito, tra rimpianto e possibilità."},
+    {t:"14:30",title:"UNCHAINED",syn:"Giappone 2026 (Yoshida Keisuke). Prima mondiale. Una parabola sul male: fino a che punto può spingersi la crudeltà umana? Un film che scava nella natura oscura dell'uomo."},
+    {t:"16:35",title:"MEASURE IN LOVE",syn:"Hong Kong 2025 (Kung Siu-ping). Un'altra mattone nel muro: dramma sentimentale che misura l'amore in termini di sacrifici, attese e silenzi accumulati nel tempo."},
+    {t:"19:15",title:"NUMBER ONE",syn:"Corea del Sud 2026 (Kim Tae-yong). Un conto alla rovescia inatteso: thriller o dramma su chi si trova improvvisamente al vertice, con tutto il peso e il pericolo che ne deriva."},
+    {t:"21:20",title:"ALL GREENS",syn:"Giappone 2026 (Koyama Takashi). Vuoi una canna? Commedia irriverente e scanzonata sulla vita quotidiana, con un tono da buddy movie rilassato e umoristico."},
+    {t:"23:40",title:"UNIDENTIFIED MURDER",syn:"Hong Kong 2026 (Kwok Ka-hei, Jack Lee). UFO o non UFO? Un omicidio misterioso che potrebbe avere spiegazioni soprannaturali — o forse no. Thriller tra il grottesco e il poliziesco."}
   ]},
   { day:"Ven 1 Mag", label:"Ven 1/5", films:[
-    {t:"09:00",title:"THE FOX KING",syn:"Cina 2025. Fantasy storico ispirato ai miti cinesi sulla volpe a nove code, creatura soprannaturale ambigua tra bene e male."},
-    {t:"10:50",title:"TOKYO TAXI",syn:"Giappone 2025. Drama su un tassista notturno di Tokyo e i passeggeri che attraversano la sua vita, ciascuno con una storia da raccontare."},
-    {t:"12:50",title:"DOPAMINE",syn:"Corea del Sud 2025. Drama sulle dipendenze contemporanee — social, app di incontri, videogiochi — e la ricerca di soddisfazione immediata."},
-    {t:"14:40",title:"THE OLD MAN AND HIS CAR",syn:"Giappone 2025. Road movie delicato su un anziano e la sua vecchia automobile in un ultimo viaggio carico di significati."},
-    {t:"16:25",title:"THE KING'S WARDEN",syn:"Cina 2025. Drama storico di palazzo: un guardiano fedele al sovrano si trova a dover scegliere tra lealtà assoluta e giustizia."},
-    {t:"19:00",title:"MOTHER BHUMI",syn:"India 2025. Epic drama sulla terra come madre: una storia di contadini, lotte agrarie e legami ancestrali con il suolo."},
-    {t:"21:25",title:"TUNNELS: SUN IN THE DARK",syn:"Cina 2025. Thriller/disaster movie: una rete di tunnel sotterranei, la luce solare come miraggio da raggiungere a tutti i costi."},
-    {t:"23:45",title:"THE LAST SHOT",syn:"Hong Kong 2025. Action thriller: un ex tiratore scelto torna in campo per un ultimo, decisivo colpo che potrebbe cambiare tutto."}
+    {t:"09:00",title:"THE FOX KING",syn:"Malaysia 2025 (Woo Ming Jin). I gemelli, la donna misteriosa e il mare: un racconto enigmatico e atmosferico che mescola folklore e suspense sulle coste della Malaysia."},
+    {t:"10:50",title:"TOKYO TAXI",syn:"Giappone 2025 (Yamada Yoji). Road movie nostalgico per le strade di Tokyo: il maestro Yamada racconta un viaggio tra passato e presente, con la malinconia dei luoghi e dei ricordi. Fuori concorso, special screening."},
+    {t:"12:50",title:"DOPAMINE",syn:"Indonesia 2025 (Teddy Soeria Atmadja). Thriller romantico criminale: amore, ossessione e crimine si intrecciano in un film che esplora la dipendenza emotiva e i suoi rischi fatali."},
+    {t:"14:40",title:"THE OLD MAN AND HIS CAR",syn:"Singapore 2025 (Michael Kam). Sui sentieri della memoria: un anziano e la sua auto in un viaggio malinconico tra ricordi, perdite e la bellezza silenziosa del tempo che passa."},
+    {t:"16:25",title:"THE KING'S WARDEN",syn:"Corea del Sud 2026 (Jang Hang-jun). Un re come ospite: blockbuster storico coreano già visto da oltre 15 milioni di spettatori, sull'onore e il potere nella Corea antica."},
+    {t:"19:00",title:"MOTHER BHUMI",syn:"Malaysia 2025 (Chong Keat Aun). Vita e magia al confine: l'ultimo film di Fan Bingbing (premiata con il Gelso d'Oro alla Carriera), vincitrice del Golden Horse come miglior attrice. Un dramma sulla terra, la sopravvivenza e la magia ai margini del mondo."},
+    {t:"21:25",title:"TUNNELS: SUN IN THE DARK",syn:"Vietnam 2025 (Bui Thac Chuyen). L'altro lato della guerra in Vietnam: una visione intima e spietata del conflitto visto dall'interno dei tunnel, lontana dalla retorica eroica."},
+    {t:"23:45",title:"THE LAST SHOT",syn:"Thailandia 2026 (Puttipong Nakthong). Neo-noir avvincente: un thriller tailandese di grande tensione, costruito con maestria stilistica e una narrazione che non lascia scampo."}
   ]},
   { day:"Sab 2 Mag", label:"Sab 2/5", films:[
-    {t:"09:00",title:"A WRITER'S ODYSSEY 2",syn:"Cina 2025. Sequel del fantasy d'azione del 2021: uno scrittore continua a vivere parallelamente la sua storia e quella del suo romanzo, in un intreccio di mondi."},
-    {t:"11:25",title:"CIAO UFO",syn:"Italia/Giappone 2025. Curiosa coproduzione su un incontro ravvicinato che cambia la vita di un gruppo di personaggi, tra comicità e meraviglia."},
-    {t:"13:50",title:"GOHAN",syn:"Giappone 2025. 'Gohan' significa riso cotto e pasto: un film sul cibo come linguaggio d'amore, famiglia e identità culturale giapponese."},
-    {t:"16:25",title:"UNEXPECTED FAMILY",syn:"Corea del Sud 2025. Commedia familiare: persone non legate da sangue si ritrovano a formare una famiglia improbabile ma straordinariamente autentica."},
-    {t:"19:00",title:"BLADES OF THE GUARDIANS: WIND RISES IN THE DESERT",syn:"Cina 2024. Action fantasy wuxia ambientato nel deserto: guardiani lama proteggono il mondo da forze oscure in scontri spettacolari."},
-    {t:"21:30",title:"BLOOD MOON RITE 8",syn:"Cina/Hong Kong 2025. Horror soprannaturale: l'ottavo rituale della luna di sangue si avvicina e con esso un'entità antica e spietata."}
+    {t:"09:00",title:"A WRITER'S ODYSSEY 2",syn:"Cina 2025 (Lu Yang). Sequel del fantasy d'azione del 2021: lo scrittore torna a vivere parallelamente la sua storia e quella del suo romanzo, in un intreccio di mondi magnifico e stravagante."},
+    {t:"11:25",title:"CIAO UFO",syn:"Hong Kong 2025 (Patrick Leung). Tre amici d'infanzia cresciuti nel popolare quartiere di Wah Fu Estate vengono segnati per sempre da un avvistamento UFO negli anni '80: da adulti scoprono che la vita non è andata come speravano. Dramma nostalgico vincitore dei Hong Kong Film Awards 2026 come Miglior Film. Fuori concorso, special screening."},
+    {t:"13:50",title:"GOHAN",syn:"Thailandia 2026 (Chayanop Boonprakob, Baz Poonpiriya, Atta Hemwadee). La vita di un cane in 3 episodi: tre registi tailandesi raccontano il mondo dal punto di vista di un cane, tra commedia e commozione."},
+    {t:"16:25",title:"UNEXPECTED FAMILY",syn:"Cina 2026 (Li Taiyan). Una commedia familiare in stile Jackie Chan: situazioni impreviste, dinamiche caotica e cuore grande per un film che celebra i legami inaspettati."},
+    {t:"19:00",title:"BLADES OF THE GUARDIANS: WIND RISES IN THE DESERT",syn:"Cina 2024. Action fantasy wuxia ambientato nel deserto: guardiani lama proteggono il mondo da forze oscure in scontri spettacolari tra sabbia e vento."},
+    {t:"21:30",title:"BLOOD MOON RITE 8",syn:"Vietnam 2026 (Phan Gia Nhat Linh). Film di chiusura FEFF28. One Cut of the Dead rivive: remake vietnamita del cult giapponese sullo zombie movie girato in un solo piano sequenza, reimmaginato con freschezza e ironia."}
   ]}
 ];
 
