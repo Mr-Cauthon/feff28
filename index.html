@@ -197,6 +197,20 @@
   }
   .day-tab:hover { color: var(--gold-light); }
   .day-tab.active { color: var(--gold-light); border-bottom-color: var(--gold); }
+  .day-tab.tab-rank {
+    color: var(--gold-light);
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    border-left: 1px solid rgba(245,240,232,0.12);
+    margin-left: 6px;
+    padding-left: 18px;
+    background: rgba(200,146,58,0.12);
+    border-radius: 4px 4px 0 0;
+    position: relative;
+  }
+
+  .day-tab.tab-rank:hover { color: #fff; background: rgba(200,146,58,0.25); }
+  .day-tab.tab-rank.active { color: #fff; background: var(--gold); border-bottom-color: var(--gold); }
 
   /* Content */
   main { padding: 0 0 4rem; }
@@ -495,6 +509,36 @@
     }
   }
 
+  /* Ranking */
+  .rank-section { padding: 1rem 1.5rem 1rem; }
+  .rank-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 400; color: var(--ink); margin-bottom: 0.25rem; }
+  .rank-subtitle { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1.25rem; }
+  .rank-empty { font-size: 0.85rem; color: var(--muted); font-style: italic; padding: 2rem 0; text-align: center; }
+  .rank-row {
+    display: flex; align-items: center; gap: 12px;
+    background: white; border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 14px; margin-bottom: 8px;
+  }
+  .rank-row.gold   { border-color: var(--gold); background: rgba(200,146,58,0.06); }
+  .rank-row.silver { border-color: #aaa; background: rgba(170,170,170,0.06); }
+  .rank-row.bronze { border-color: #b07040; background: rgba(176,112,64,0.06); }
+  .rank-pos { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; min-width: 28px; text-align: center; color: var(--muted); }
+  .rank-row.gold   .rank-pos { color: var(--gold); }
+  .rank-row.silver .rank-pos { color: #999; }
+  .rank-row.bronze .rank-pos { color: #b07040; }
+  .rank-info { flex: 1; min-width: 0; }
+  .rank-film { font-size: 0.82rem; font-weight: 500; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rank-day  { font-size: 0.65rem; color: var(--muted); margin-top: 2px; }
+  .rank-score { text-align: right; }
+  .rank-avg  { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; color: var(--ink); line-height: 1; }
+  .rank-count { font-size: 0.62rem; color: var(--muted); margin-top: 2px; }
+  .rank-bar-wrap { width: 60px; background: var(--paper2); border-radius: 4px; height: 5px; overflow: hidden; }
+  .rank-bar { height: 5px; background: var(--gold); border-radius: 4px; transition: width 0.4s; }
+  @media (max-width: 480px) {
+    .rank-section { padding: 1rem 0.875rem; }
+    .rank-bar-wrap { width: 40px; }
+  }
+
   /* Config notice */
   .notice {
     margin: 1.5rem;
@@ -771,15 +815,18 @@ document.addEventListener('click', function(e) {
 // ─── Render ───────────────────────────────────────────
 function buildNav() {
   const nav = document.getElementById('dayNav');
-  nav.innerHTML = films.map((d,i) =>
+  const dayTabs = films.map((d,i) =>
     `<div class="day-tab ${i===0?'active':''}" onclick="switchDay(${i})">${d.label}</div>`
   ).join('');
+  nav.innerHTML = dayTabs + `<div class="day-tab tab-rank" onclick="switchDay(${films.length})">Classifica</div>`;
 }
 
 function switchDay(i) {
   currentDay = i;
   document.querySelectorAll('.day-tab').forEach((t,j) => t.classList.toggle('active', j===i));
   document.querySelectorAll('.day-section').forEach((s,j) => s.classList.toggle('active', j===i));
+  const rs = document.getElementById('rank-section');
+  if (rs) rs.style.display = (i === films.length) ? 'block' : 'none';
 }
 
 function renderAll() {
@@ -829,6 +876,64 @@ function renderAll() {
       ${filmsHtml}
     </div>`;
   }).join('');
+
+  // Ranking section
+  let rs = document.getElementById('rank-section');
+  if (!rs) {
+    rs = document.createElement('div');
+    rs.id = 'rank-section';
+    rs.className = 'rank-section';
+    main.appendChild(rs);
+  }
+  rs.style.display = (currentDay === films.length) ? 'block' : 'none';
+  renderRanking(rs);
+}
+
+function renderRanking(container) {
+  // Build ranked list from allVotes
+  const ranked = [];
+  films.forEach((day, di) => {
+    day.films.forEach((f, fi) => {
+      const key = filmKey(di, fi);
+      const votes = allVotes[key] ? Object.values(allVotes[key]) : [];
+      if (votes.length === 0) return;
+      const avg = votes.reduce((a,b) => a+b, 0) / votes.length;
+      ranked.push({ title: f.title, day: day.day, avg, count: votes.length });
+    });
+  });
+  ranked.sort((a,b) => b.avg - a.avg || b.count - a.count);
+
+  if (ranked.length === 0) {
+    container.innerHTML = `
+      <div class="rank-title">Classifica</div>
+      <div class="rank-subtitle">Media voti · aggiornamento in tempo reale</div>
+      <div class="rank-empty">Nessun voto ancora — inizia a votare!</div>`;
+    return;
+  }
+
+  const medals = ['gold','silver','bronze'];
+  const rows = ranked.map((r,i) => {
+    const cls = medals[i] || '';
+    const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}`;
+    const barW = Math.round((r.avg/5)*100);
+    return `<div class="rank-row ${cls}">
+      <div class="rank-pos">${medal}</div>
+      <div class="rank-info">
+        <div class="rank-film">${r.title}</div>
+        <div class="rank-day">${r.day}</div>
+      </div>
+      <div class="rank-bar-wrap"><div class="rank-bar" style="width:${barW}%"></div></div>
+      <div class="rank-score">
+        <div class="rank-avg">${r.avg.toFixed(1)}</div>
+        <div class="rank-count">${r.count} vot${r.count===1?'o':'i'}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="rank-title">Classifica</div>
+    <div class="rank-subtitle">Media voti · ${ranked.length} film votati</div>
+    ${rows}`;
 }
 
 function toggleSyn(key) {
