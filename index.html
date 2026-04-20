@@ -342,6 +342,17 @@
   .vote-chip-name { color: var(--ink); font-weight: 500; }
   .vote-chip-stars { color: var(--gold); letter-spacing: -1px; }
 
+  .feff-link {
+    display: block;
+    margin-top: 8px;
+    font-size: 0.65rem;
+    color: var(--gold);
+    text-decoration: none;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+  }
+  .feff-link:hover { text-decoration: underline; }
+
   .toggle-syn {
     background: none; border: none;
     font-size: 0.65rem;
@@ -770,6 +781,67 @@ const films = [
   ]}
 ];
 
+const FILM_URLS = {
+    "HULA GIRLS": "https://www.fareastfilm.com/film/hula-girls-7148/",
+    "UNDER THE OPEN SKY": "https://www.fareastfilm.com/film/under-the-open-sky/",
+    "WE ARE ALL STRANGERS": "https://www.fareastfilm.com/film/we-are-all-strangers/",
+    "KUNG FU": "https://www.fareastfilm.com/film/kung-fu/",
+    "THE SNOWBALL ON A SUNNY DAY": "https://www.fareastfilm.com/film/the-snowball-on-a-sunny-day/",
+    "AH GIRL": "https://www.fareastfilm.com/film/ah-girl/",
+    "5 CENTIMETERS PER SECOND": "https://www.fareastfilm.com/film/5-centimeters-per-second/",
+    "WE'RE NOTHING AT ALL": "https://www.fareastfilm.com/film/we-re-nothing-at-all/",
+    "PERFECT DAYS": "https://www.fareastfilm.com/film/perfect-days/",
+    "GHOST IN THE CELL": "https://www.fareastfilm.com/film/ghost-in-the-cell/",
+    "THA RAE: THE EXORCIST": "https://www.fareastfilm.com/film/tha-rae-the-exorcist/",
+    "LINKA LINKA": "https://www.fareastfilm.com/film/linka-linka/",
+    "FUJIKO": "https://www.fareastfilm.com/film/fujiko/",
+    "I BLEW OUT THE CANDLES BEFORE MAKING A WISH": "https://www.fareastfilm.com/film/i-blew-out-the-candles-before-making-a-wish/",
+    "KOKUHO": "https://www.fareastfilm.com/film/kokuho/",
+    "A FOGGY TALE": "https://www.fareastfilm.com/film/a-foggy-tale/",
+    "HIJACKED": "https://www.fareastfilm.com/film/hijacked/",
+    "NIGHT KING": "https://www.fareastfilm.com/film/night-king/",
+    "SOMEONE LIKE ME": "https://www.fareastfilm.com/film/someone-like-me/",
+    "FILIPIÑANA": "https://www.fareastfilm.com/film/filipinana/",
+    "THE WORLD OF LOVE": "https://www.fareastfilm.com/film/the-world-of-love/",
+    "THE SEOUL GUARDIANS": "https://www.fareastfilm.com/film/the-seoul-guardians/",
+    "KY NAM INN": "https://www.fareastfilm.com/film/ky-nam-inn/",
+    "ROAD TO VENDETTA": "https://www.fareastfilm.com/film/road-to-vendetta/",
+    "THE LAST BLOSSOM": "https://www.fareastfilm.com/film/the-last-blossom/",
+    "TAKE OFF": "https://www.fareastfilm.com/film/take-off/",
+    "THE SICKNESS UNTO LOVE": "https://www.fareastfilm.com/film/the-sickness-unto-love/",
+    "DEEP QUIET ROOM": "https://www.fareastfilm.com/film/deep-quiet-room/",
+    "JET LAG IN SUMMER": "https://www.fareastfilm.com/film/jet-lag-in-summer/",
+    "MY NAME": "https://www.fareastfilm.com/film/my-name/",
+    "SUZUKI = BAKUDAN": "https://www.fareastfilm.com/film/suzukibakudan/",
+    "A MIGHTY ADVENTURE": "https://www.fareastfilm.com/film/a-mighty-adventure/",
+    "MIDNIGHT GIRLS": "https://www.fareastfilm.com/film/midnight-girls/",
+    "TIGER": "https://www.fareastfilm.com/film/tiger/",
+    "SUNSHINE WOMEN'S CHOIR": "https://www.fareastfilm.com/film/sunshine-women-s-choir/",
+    "90 METERS": "https://www.fareastfilm.com/film/90-meters/",
+    "THE SHADOW'S EDGE": "https://www.fareastfilm.com/film/the-shadow-s-edge/",
+    "ANOTHER WORLD": "https://www.fareastfilm.com/film/another-world/",
+    "ONCE WE WERE US": "https://www.fareastfilm.com/film/once-we-were-us/",
+    "UNCHAINED": "https://www.fareastfilm.com/film/unchained/",
+    "MEASURE IN LOVE": "https://www.fareastfilm.com/film/measure-in-love/",
+    "NUMBER ONE": "https://www.fareastfilm.com/film/number-one/",
+    "ALL GREENS": "https://www.fareastfilm.com/film/all-greens/",
+    "UNIDENTIFIED MURDER": "https://www.fareastfilm.com/film/unidentified-murder/",
+    "THE FOX KING": "https://www.fareastfilm.com/film/the-fox-king/",
+    "TOKYO TAXI": "https://www.fareastfilm.com/film/tokyo-taxi/",
+    "DOPAMINE": "https://www.fareastfilm.com/film/dopamine/",
+    "THE OLD MAN AND HIS CAR": "https://www.fareastfilm.com/film/the-old-man-and-his-car/",
+    "THE KING'S WARDEN": "https://www.fareastfilm.com/film/the-king-s-warden/",
+    "MOTHER BHUMI": "https://www.fareastfilm.com/film/mother-bhumi/",
+    "TUNNELS: SUN IN THE DARK": "https://www.fareastfilm.com/film/tunnels-sun-in-the-dark/",
+    "THE LAST SHOT": "https://www.fareastfilm.com/film/the-last-shot/",
+    "A WRITER'S ODYSSEY 2": "https://www.fareastfilm.com/film/a-writer-s-odyssey-2/",
+    "CIAO UFO": "https://www.fareastfilm.com/film/ciao-ufo/",
+    "GOHAN": "https://www.fareastfilm.com/film/gohan/",
+    "UNEXPECTED FAMILY": "https://www.fareastfilm.com/film/unexpected-family/",
+    "BLADES OF THE GUARDIANS: WIND RISES IN THE DESERT": "https://www.fareastfilm.com/film/blades-of-the-guardians-wind-rises-in-the-desert/",
+    "BLOOD MOON RITE 8": "https://www.fareastfilm.com/film/blood-moon-rite-8/"
+  };
+
 const COMPETITION_STATUS = {
     "HULA GIRLS": "fuori concorso",
     "UNDER THE OPEN SKY": "fuori concorso",
@@ -992,7 +1064,7 @@ function renderAll() {
           <div class="film-body">
             <div class="film-title">${f.title}</div>
             ${(()=>{ const s=COMPETITION_STATUS[f.title]; return s ? `<span class="comp-badge ${s==='in concorso'?'in':'out'}">${s}</span>` : ''; })()}
-            ${f.syn ? `<div class="film-synopsis-preview ${synVisible?'open':''}" id="syn-${synKey}">${f.syn}</div>` : ''}
+            ${f.syn ? `<div class="film-synopsis-preview ${synVisible?'open':''}" id="syn-${synKey}">${f.syn}${FILM_URLS[f.title] ? `<a class="feff-link" href="${FILM_URLS[f.title]}" target="_blank" rel="noopener">scheda completa ↗</a>` : ''}</div>` : ''}
             <div class="film-actions">
               <div class="stars">${starsHtml}</div>
               ${f.syn ? `<button class="toggle-syn" data-syn="${synKey}">${synVisible?'nascondi ▲':'trama ▼'}</button>` : ''}
