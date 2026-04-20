@@ -325,6 +325,7 @@
     font-weight: 500;
     color: white;
   }
+  .vote-chip-name { color: var(--ink); font-weight: 500; }
   .vote-chip-stars { color: var(--gold); letter-spacing: -1px; }
 
   .toggle-syn {
@@ -709,7 +710,13 @@ function rate(dayIdx, filmIdx, stars) {
   if (!currentUser) { showToast('Inserisci prima il tuo nome ↑'); return; }
   const key = filmKey(dayIdx, filmIdx);
   if (!allVotes[key]) allVotes[key] = {};
-  allVotes[key][currentUser] = stars;
+  const current = allVotes[key][currentUser] || 0;
+  if (current === stars) {
+    delete allVotes[key][currentUser];  // recliccare stesso voto → rimuove
+    if (Object.keys(allVotes[key]).length === 0) delete allVotes[key];
+  } else {
+    allVotes[key][currentUser] = stars;
+  }
   renderAll();
   saveVotes();
 }
@@ -742,6 +749,7 @@ function renderAll() {
         otherVotes.map(([name,stars]) => `
           <div class="vote-chip">
             <div class="vote-chip-avatar" style="background:${avatarColor(name)}">${initials(name)}</div>
+            <span class="vote-chip-name">${name.split(' ')[0]}</span>
             <span class="vote-chip-stars">${'★'.repeat(stars)}</span>
           </div>`).join('')
       }</div>` : '';
