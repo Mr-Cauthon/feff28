@@ -357,15 +357,23 @@
   /* Unseen toggle */
   .btn-unseen {
     background: none; border: none;
-    cursor: pointer; padding: 2px 4px;
-    font-size: 0.9rem; line-height: 1;
-    color: var(--border);
-    transition: color 0.2s;
+    cursor: pointer; padding: 3px 6px;
+    font-size: 1.2rem; line-height: 1;
+    color: rgba(26,18,8,0.18);
+    transition: color 0.2s, background 0.2s;
     margin-left: auto;
     flex-shrink: 0;
+    min-width: 32px;
+    min-height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 6px;
+    border: 1px solid transparent;
   }
-  .btn-unseen:hover { color: var(--muted); }
-  .btn-unseen.unseen { color: var(--muted); }
+  .btn-unseen:hover { color: var(--muted); background: var(--paper2); border-color: var(--border); }
+  .btn-unseen.unseen { color: var(--red); opacity: 1; }
+  @media (max-width: 480px) {
+    .btn-unseen { font-size: 1.1rem; min-width: 28px; min-height: 28px; }
+  }
   .film-card.unseen { opacity: 0.42; }
   .film-card.unseen .film-title { text-decoration: line-through; text-decoration-color: var(--muted); }
 
@@ -484,9 +492,9 @@
     .festival-dates {
       font-size: 0.6rem;
     }
-    .login-bar input {
-      font-size: 16px; /* prevents iOS auto-zoom */
-      width: 140px;
+    .login-bar select {
+      font-size: 16px;
+      width: 160px;
       padding: 8px 12px;
     }
     .btn-confirm {
@@ -610,7 +618,16 @@
     </div>
   </div>
   <div class="login-bar" id="loginBar">
-    <input type="text" id="nameInput" placeholder="Il tuo nome..." maxlength="20">
+    <select id="nameInput" style="background:rgba(245,240,232,0.1);border:1px solid rgba(245,240,232,0.25);border-radius:6px;color:#f5f0e8;font-family:'DM Sans',sans-serif;font-size:16px;padding:7px 12px;outline:none;width:180px;appearance:none;-webkit-appearance:none;cursor:pointer;">
+      <option value="" disabled selected style="color:#999;background:#1a1208;">Chi sei?</option>
+      <option style="color:#1a1208;background:#f5f0e8;">Davide</option>
+      <option style="color:#1a1208;background:#f5f0e8;">Silvia</option>
+      <option style="color:#1a1208;background:#f5f0e8;">Francesco</option>
+      <option style="color:#1a1208;background:#f5f0e8;">Francesca</option>
+      <option style="color:#1a1208;background:#f5f0e8;">Federica</option>
+      <option style="color:#1a1208;background:#f5f0e8;">Lara</option>
+      <option style="color:#1a1208;background:#f5f0e8;">Bruno</option>
+    </select>
     <button class="btn-confirm" onclick="setUser()">Entra</button>
   </div>
   <div class="user-badge" id="userBadge">
@@ -874,7 +891,7 @@ function renderAll() {
     const filmsHtml = day.films.map((f, fi) => {
       const key = filmKey(di, fi);
       const myRating = currentUser && allVotes[key] ? (allVotes[key][currentUser] || 0) : 0;
-      const otherVotes = allVotes[key] ? Object.entries(allVotes[key]) : [];
+      const otherVotes = allVotes[key] ? Object.entries(allVotes[key]).filter(([,v]) => v !== '__unseen__') : [];
       const starsHtml = [1,2,3,4,5].map(s =>
         `<span class="star ${myRating>=s?'on':''}" data-rate="${s}" data-day="${di}" data-film="${fi}">★</span>`
       ).join('');
@@ -891,8 +908,7 @@ function renderAll() {
       const noteHtml = currentUser ? `
         <span class="note-label">nota personale</span>
         <textarea class="note-area" data-notekey="${noteKey}" placeholder="Solo tu puoi vedere questo…" rows="2">${noteVal}</textarea>` : '';
-      const unseenKey = `feff28_unseen_${currentUser}_${key}`;
-      const isUnseen = currentUser ? (localStorage.getItem(unseenKey) === '1') : false;
+      const isUnseen = currentUser && allVotes[key] ? (allVotes[key][currentUser] === '__unseen__') : false;
       const synKey = key;
       const synVisible = synOpen[synKey];
       return `<div class="film-card${isUnseen?' unseen':''}">
@@ -904,7 +920,7 @@ function renderAll() {
             <div class="film-actions">
               <div class="stars">${starsHtml}</div>
               ${f.syn ? `<button class="toggle-syn" data-syn="${synKey}">${synVisible?'nascondi ▲':'trama ▼'}</button>` : ''}
-              ${currentUser ? `<button class="btn-unseen${isUnseen?' unseen':''}" data-unseenkey="${unseenKey}" title="${isUnseen?'segna come visto':'segna come non visto'}">${isUnseen?'🚫':'👁'}</button>` : ''}
+              ${currentUser ? `<button class="btn-unseen${isUnseen?' unseen':''}" data-uday="${di}" data-ufilm="${fi}" aria-label="${isUnseen?'segna come visto':'segna come non visto'}">${isUnseen?'🙈':'👁'}</button>` : ''}
             </div>
             ${otherHtml}
             ${noteHtml}
@@ -948,7 +964,7 @@ function renderRanking(container) {
   films.forEach((day, di) => {
     day.films.forEach((f, fi) => {
       const key = filmKey(di, fi);
-      const votes = allVotes[key] ? Object.values(allVotes[key]) : [];
+      const votes = allVotes[key] ? Object.values(allVotes[key]).filter(v => v !== '__unseen__') : [];
       if (votes.length === 0) return;
       const avg = votes.reduce((a,b) => a+b, 0) / votes.length;
       ranked.push({ title: f.title, day: day.day, avg, count: votes.length });
@@ -1004,24 +1020,38 @@ document.addEventListener('input', function(e) {
 // ─── Unseen toggle ────────────────────────────────────
 document.addEventListener('click', function(e) {
   const btn = e.target.closest('.btn-unseen');
-  if (!btn || !btn.dataset.unseenkey) return;
-  const k = btn.dataset.unseenkey;
-  const isNow = localStorage.getItem(k) === '1';
-  if (isNow) localStorage.removeItem(k);
-  else localStorage.setItem(k, '1');
+  if (!btn) return;
+  e.stopPropagation();
+  if (!currentUser) { showToast('Inserisci prima il tuo nome ↑'); return; }
+  const di = btn.dataset.uday;
+  const fi = btn.dataset.ufilm;
+  if (di === undefined || fi === undefined) return;
+  const key = filmKey(+di, +fi);
+  if (!allVotes[key]) allVotes[key] = {};
+  const isNow = allVotes[key][currentUser] === '__unseen__';
+  if (isNow) {
+    delete allVotes[key][currentUser];
+    if (Object.keys(allVotes[key]).length === 0) delete allVotes[key];
+  } else {
+    allVotes[key][currentUser] = '__unseen__';
+  }
+  localStorage.setItem('feff28_votes_cache', JSON.stringify(allVotes));
   renderAll();
+  saveVotes();
 });
 
 // ─── Stats ────────────────────────────────────────────
 function getPersonStats(name) {
   const totalFilms = films.reduce((a,d) => a + d.films.length, 0);
-  let voted = 0, ratingSum = 0;
+  let voted = 0, ratingSum = 0, unseen = 0;
   let bestTitle = '—', bestR = 0;
   const byDay = films.map((day, di) => {
     let dayVoted = 0, daySum = 0;
     day.films.forEach((f, fi) => {
       const key = filmKey(di, fi);
-      const r = allVotes[key] ? (allVotes[key][name] || 0) : 0;
+      const val = allVotes[key] ? allVotes[key][name] : undefined;
+      if (val === '__unseen__') { unseen++; return; }
+      const r = val || 0;
       if (r > 0) {
         voted++; ratingSum += r;
         dayVoted++; daySum += r;
@@ -1032,7 +1062,7 @@ function getPersonStats(name) {
   });
   const avg = voted > 0 ? ratingSum / voted : null;
   const pct = Math.round((voted / totalFilms) * 100);
-  return { name, voted, totalFilms, avg, pct, byDay, bestTitle, bestR };
+  return { name, voted, totalFilms, avg, pct, byDay, bestTitle, bestR, unseen };
 }
 
 function renderStats(container) {
@@ -1116,7 +1146,7 @@ function exportText() {
     day.films.forEach((f, fi) => {
       const key = filmKey(di, fi);
       const votes = allVotes[key] || {};
-      const myR = currentUser ? (votes[currentUser] || 0) : 0;
+      const myR = currentUser ? (votes[currentUser] === '__unseen__' ? 0 : (votes[currentUser] || 0)) : 0;
       const myStars = myR > 0 ? '★'.repeat(myR) + '☆'.repeat(5-myR) : '·····';
       const others = Object.entries(votes).filter(([n])=>n!==currentUser);
       const othersStr = others.length ? ' | ' + others.map(([n,s])=>`${n.split(' ')[0]} ${'★'.repeat(s)}`).join(', ') : '';
