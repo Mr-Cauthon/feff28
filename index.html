@@ -260,6 +260,13 @@
     min-width: 56px;
     border-right: 1px solid var(--border);
   }
+  .film-end {
+    font-size: 0.55rem;
+    color: var(--muted);
+    margin-top: 3px;
+    letter-spacing: 0.02em;
+  }
+
   .film-time {
     font-family: 'Playfair Display', serif;
     font-size: 1rem;
@@ -865,6 +872,67 @@ const FILM_URLS = {
     "BLOOD MOON RITE 8": "https://www.fareastfilm.com/film/blood-moon-rite-8/"
   };
 
+const DURATIONS = {
+    "HULA GIRLS": 121,
+    "UNDER THE OPEN SKY": 126,
+    "WE ARE ALL STRANGERS": 157,
+    "KUNG FU": 127,
+    "THE SNOWBALL ON A SUNNY DAY": 131,
+    "AH GIRL": 99,
+    "5 CENTIMETERS PER SECOND": 121,
+    "WE'RE NOTHING AT ALL": 128,
+    "PERFECT DAYS": 124,
+    "GHOST IN THE CELL": 106,
+    "THA RAE: THE EXORCIST": 119,
+    "LINKA LINKA": 100,
+    "FUJIKO": 95,
+    "I BLEW OUT THE CANDLES BEFORE MAKING A WISH": 116,
+    "KOKUHO": 175,
+    "A FOGGY TALE": 134,
+    "HIJACKED": 118,
+    "NIGHT KING": 133,
+    "SOMEONE LIKE ME": 106,
+    "FILIPIÑANA": 100,
+    "THE WORLD OF LOVE": 119,
+    "THE SEOUL GUARDIANS": 70,
+    "KY NAM INN": 140,
+    "ROAD TO VENDETTA": 117,
+    "THE LAST BLOSSOM": 90,
+    "TAKE OFF": 122,
+    "THE SICKNESS UNTO LOVE": 109,
+    "DEEP QUIET ROOM": 108,
+    "JET LAG IN SUMMER": 93,
+    "MY NAME": 113,
+    "SUZUKI = BAKUDAN": 136,
+    "A MIGHTY ADVENTURE": 77,
+    "MIDNIGHT GIRLS": 104,
+    "TIGER": 126,
+    "SUNSHINE WOMEN'S CHOIR": 134,
+    "90 METERS": 115,
+    "THE SHADOW'S EDGE": 142,
+    "ANOTHER WORLD": 111,
+    "ONCE WE WERE US": 115,
+    "UNCHAINED": 106,
+    "MEASURE IN LOVE": 112,
+    "NUMBER ONE": 105,
+    "ALL GREENS": 119,
+    "UNIDENTIFIED MURDER": 85,
+    "THE FOX KING": 94,
+    "TOKYO TAXI": 103,
+    "DOPAMINE": 94,
+    "THE OLD MAN AND HIS CAR": 82,
+    "THE KING'S WARDEN": 117,
+    "MOTHER BHUMI": 129,
+    "TUNNELS: SUN IN THE DARK": 126,
+    "THE LAST SHOT": 113,
+    "A WRITER'S ODYSSEY 2": 133,
+    "CIAO UFO": 122,
+    "GOHAN": 140,
+    "UNEXPECTED FAMILY": 121,
+    "BLADES OF THE GUARDIANS: WIND RISES IN THE DESERT": 125,
+    "BLOOD MOON RITE 8": 130
+  };
+
 const COMPETITION_STATUS = {
     "HULA GIRLS": "fuori concorso",
     "UNDER THE OPEN SKY": "fuori concorso",
@@ -1094,7 +1162,18 @@ function renderAll() {
       const synVisible = synOpen[synKey];
       return `<div class="film-card${isUnseen?' unseen':''}">
         <div class="film-main">
-          <div class="film-time-col"><span class="film-time">${f.t}</span></div>
+          <div class="film-time-col">
+            <span class="film-time">${f.t}</span>
+            ${(() => {
+              const dur = DURATIONS[f.title];
+              if (!dur) return '';
+              const [h,m] = f.t.split(':').map(Number);
+              const end = new Date(2000,0,1,h,m+dur);
+              const eh = String(end.getHours()).padStart(2,'0');
+              const em = String(end.getMinutes()).padStart(2,'0');
+              return `<span class="film-end">~${eh}:${em}</span>`;
+            })()}
+          </div>
           <div class="film-body">
             <div class="film-title">${f.title}</div>
             ${(()=>{ const s=COMPETITION_STATUS[f.title]; return s ? `<span class="comp-badge ${s==='in concorso'?'in':'out'}">${s}</span>` : ''; })()}
