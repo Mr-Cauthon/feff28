@@ -340,6 +340,34 @@
     white-space: nowrap;
   }
 
+  /* Personal note */
+  .note-area {
+    width: 100%;
+    margin-top: 8px;
+    padding: 7px 10px;
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    background: var(--paper);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    color: var(--ink);
+    resize: none;
+    outline: none;
+    min-height: 52px;
+    transition: border-color 0.2s;
+    line-height: 1.5;
+  }
+  .note-area:focus { border-color: var(--gold); border-style: solid; }
+  .note-area::placeholder { color: var(--muted); font-style: italic; }
+  .note-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 8px;
+    display: block;
+  }
+
   /* Export */
   .export-bar {
     position: fixed;
@@ -521,7 +549,8 @@
 <main id="main"></main>
 
 <div class="export-bar">
-  <button class="btn-export" onclick="exportText()">📋 Esporta per Note</button>
+  <button class="btn-export" onclick="exportText()">Esporta testo</button>
+  <button class="btn-export" onclick="exportCSV()" style="background:var(--paper2);color:var(--ink);">Esporta CSV</button>
   <button class="btn-export secondary" onclick="refreshData()">↻</button>
 </div>
 
@@ -771,6 +800,11 @@ function renderAll() {
             <span class="vote-chip-stars">${'★'.repeat(stars)}</span>
           </div>`).join('')
       }</div>` : '';
+      const noteKey = `feff28_note_${currentUser}_${key}`;
+      const noteVal = currentUser ? (localStorage.getItem(noteKey) || '') : '';
+      const noteHtml = currentUser ? `
+        <span class="note-label">nota personale</span>
+        <textarea class="note-area" data-notekey="${noteKey}" placeholder="Solo tu puoi vedere questo…" rows="2">${noteVal}</textarea>` : '';
       const synKey = key;
       const synVisible = synOpen[synKey];
       return `<div class="film-card">
@@ -784,6 +818,7 @@ function renderAll() {
               ${f.syn ? `<button class="toggle-syn" data-syn="${synKey}">${synVisible?'nascondi ▲':'trama ▼'}</button>` : ''}
             </div>
             ${otherHtml}
+            ${noteHtml}
           </div>
         </div>
       </div>`;
@@ -801,6 +836,13 @@ function toggleSyn(key) {
   renderAll();
 }
 
+// ─── Notes (local only) ──────────────────────────────
+document.addEventListener('input', function(e) {
+  if (e.target.classList.contains('note-area') && e.target.dataset.notekey) {
+    localStorage.setItem(e.target.dataset.notekey, e.target.value);
+  }
+});
+
 // ─── Export ───────────────────────────────────────────
 function exportText() {
   let txt = '🎬 FEFF 28 — Diario di visione\n';
@@ -811,14 +853,46 @@ function exportText() {
       const key = filmKey(di, fi);
       const votes = allVotes[key] || {};
       const myR = currentUser ? (votes[currentUser] || 0) : 0;
-      const myStars = myR > 0 ? ' ' + '★'.repeat(myR) + '☆'.repeat(5-myR) : ' ·····';
+      const myStars = myR > 0 ? '★'.repeat(myR) + '☆'.repeat(5-myR) : '·····';
       const others = Object.entries(votes).filter(([n])=>n!==currentUser);
       const othersStr = others.length ? ' | ' + others.map(([n,s])=>`${n.split(' ')[0]} ${'★'.repeat(s)}`).join(', ') : '';
-      txt += `${f.t}  ${f.title}${myStars}${othersStr}\n`;
+      const noteKey = `feff28_note_${currentUser}_${key}`;
+      const note = currentUser ? (localStorage.getItem(noteKey) || '') : '';
+      txt += `${f.t}  ${f.title}  ${myStars}${othersStr}\n`;
+      if (note) txt += `    ✏ ${note}\n`;
     });
     txt += '\n';
   });
-  navigator.clipboard.writeText(txt).then(() => showToast('Copiato! Incolla nelle Note 📋'));
+  navigator.clipboard.writeText(txt).then(() => showToast('Copiato negli appunti ✓'));
+}
+
+function exportCSV() {
+  // Collect all voter names
+  const voters = new Set();
+  films.forEach((day, di) => day.films.forEach((f, fi) => {
+    Object.keys(allVotes[filmKey(di,fi)] || {}).forEach(n => voters.add(n));
+  }));
+  const voterList = [...voters];
+
+  const esc = v => `"${String(v).replace(/"/g,'""')}"`;
+  const header = ['Giorno','Orario','Film', ...voterList.map(n => `Voto ${n}`)].map(esc).join(',');
+  const rows = [];
+  films.forEach((day, di) => {
+    day.films.forEach((f, fi) => {
+      const key = filmKey(di, fi);
+      const votes = allVotes[key] || {};
+      const votesCols = voterList.map(n => votes[n] || '');
+      rows.push([day.day, f.t, f.title, ...votesCols].map(esc).join(','));
+    });
+  });
+  const csv = [header, ...rows].join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'feff28_voti.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV scaricato ✓');
 }
 
 function showToast(msg) {
