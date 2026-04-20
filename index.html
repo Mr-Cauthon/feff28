@@ -555,7 +555,7 @@ const films = [
   { day:"Ven 24 Apr", label:"Ven 24/4", films:[
     {t:"14:00",title:"HULA GIRLS",syn:"Giappone 2006. In un villaggio minerario del Tohoku in crisi, giovani donne si allenano per diventare ballerine di hula e salvare la comunità. Dramma commovente ispirato a una storia vera."},
     {t:"16:20",title:"UNDER THE OPEN SKY",syn:"Giappone 2020. Un ex yakuza scarcerato dopo quindici anni tenta di reinserirsi nella società, cercando di costruire una vita nuova fuori dall'unico mondo che ha sempre conosciuto."},
-    {t:"19:15",title:"OPENING FEFF28",syn:"Cerimonia inaugurale del 28° Far East Film Festival di Udine."},
+    {t:"19:15",title:"WE ARE ALL STRANGERS",syn:"Singapore 2026 (Anthony Chen). Film d'apertura FEFF28. Due matrimoni mettono in crisi le vite parallele di un padre e un figlio, ridisegnando il fragile equilibrio tra loro mentre entrambi affrontano amore, perdita e responsabilità. Ritratto di una Singapore moderna tra conformismo e tradizione. Primo film singaporiano in competizione al Berlino."},
     {t:"22:30",title:"KUNG FU",syn:"Hong Kong 2004 (Stephen Chow). Negli anni '40 a Shanghai, un aspirante gangster si scontra con maestri di arti marziali nascosti in un caseggiato popolare. Commedia d'azione irresistibile."}
   ]},
   { day:"Sab 25 Apr", label:"Sab 25/4", films:[
@@ -650,12 +650,16 @@ function setSyncStatus(state, label) {
 
 async function loadVotes() {
   if (!configured) { setSyncStatus('err','non configurato'); return; }
-  setSyncStatus('loading','caricamento…');
+  // Mostra subito la cache locale, poi aggiorna in background
+  const cached = localStorage.getItem('feff28_votes_cache');
+  if (cached) { try { allVotes = JSON.parse(cached); renderAll(); } catch(e){} }
+  setSyncStatus('loading','aggiornamento…');
   try {
     const r = await fetch(BASE_URL + '/latest', { headers: {'X-Master-Key': JSONBIN_API_KEY} });
     if (!r.ok) throw new Error(r.status);
     const data = await r.json();
     allVotes = data.record.votes || {};
+    localStorage.setItem('feff28_votes_cache', JSON.stringify(allVotes));
     setSyncStatus('ok','sincronizzato');
     renderAll();
   } catch(e) {
@@ -712,14 +716,28 @@ function rate(dayIdx, filmIdx, stars) {
   if (!allVotes[key]) allVotes[key] = {};
   const current = allVotes[key][currentUser] || 0;
   if (current === stars) {
-    delete allVotes[key][currentUser];  // recliccare stesso voto → rimuove
+    delete allVotes[key][currentUser];
     if (Object.keys(allVotes[key]).length === 0) delete allVotes[key];
   } else {
     allVotes[key][currentUser] = stars;
   }
+  localStorage.setItem('feff28_votes_cache', JSON.stringify(allVotes));
   renderAll();
   saveVotes();
 }
+
+// ─── Event delegation (fixes iOS tap on re-rendered stars) ───
+document.addEventListener('click', function(e) {
+  const star = e.target.closest('[data-rate]');
+  if (star) {
+    rate(+star.dataset.day, +star.dataset.film, +star.dataset.rate);
+    return;
+  }
+  const syn = e.target.closest('[data-syn]');
+  if (syn) {
+    toggleSyn(syn.dataset.syn);
+  }
+});
 
 // ─── Render ───────────────────────────────────────────
 function buildNav() {
@@ -743,7 +761,7 @@ function renderAll() {
       const myRating = currentUser && allVotes[key] ? (allVotes[key][currentUser] || 0) : 0;
       const otherVotes = allVotes[key] ? Object.entries(allVotes[key]) : [];
       const starsHtml = [1,2,3,4,5].map(s =>
-        `<span class="star ${myRating>=s?'on':''}" onclick="rate(${di},${fi},${s})">★</span>`
+        `<span class="star ${myRating>=s?'on':''}" data-rate="${s}" data-day="${di}" data-film="${fi}">★</span>`
       ).join('');
       const otherHtml = otherVotes.length > 0 ? `<div class="votes-row">${
         otherVotes.map(([name,stars]) => `
@@ -763,7 +781,7 @@ function renderAll() {
             ${f.syn ? `<div class="film-synopsis-preview ${synVisible?'open':''}" id="syn-${synKey}">${f.syn}</div>` : ''}
             <div class="film-actions">
               <div class="stars">${starsHtml}</div>
-              ${f.syn ? `<button class="toggle-syn" onclick="toggleSyn('${synKey}')">${synVisible?'nascondi ▲':'trama ▼'}</button>` : ''}
+              ${f.syn ? `<button class="toggle-syn" data-syn="${synKey}">${synVisible?'nascondi ▲':'trama ▼'}</button>` : ''}
             </div>
             ${otherHtml}
           </div>
