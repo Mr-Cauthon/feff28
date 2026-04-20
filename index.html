@@ -1315,7 +1315,9 @@ function renderStats(container) {
   // Collect all voters from allVotes
   const voterSet = new Set();
   films.forEach((day, di) => day.films.forEach((f, fi) => {
-    Object.keys(allVotes[filmKey(di, fi)] || {}).forEach(n => voterSet.add(n));
+    Object.entries(allVotes[filmKey(di, fi)] || {}).forEach(([n,v]) => {
+      if (typeof v === 'number') voterSet.add(n);
+    });
   }));
   // current user always first if present
   const voters = currentUser
@@ -1392,12 +1394,16 @@ function exportText() {
     day.films.forEach((f, fi) => {
       const key = filmKey(di, fi);
       const votes = allVotes[key] || {};
-      const myR = currentUser ? (votes[currentUser] === '__unseen__' ? 0 : (votes[currentUser] || 0)) : 0;
+      const myR = currentUser ? (typeof votes[currentUser] === 'number' ? votes[currentUser] : 0) : 0;
       const myStars = myR > 0 ? '★'.repeat(myR) + '☆'.repeat(5-myR) : '·····';
-      const others = Object.entries(votes).filter(([n])=>n!==currentUser);
+      const others = Object.entries(votes).filter(([n,v]) =>
+        n !== currentUser && typeof v === 'number'
+      );
       const othersStr = others.length ? ' | ' + others.map(([n,s])=>`${n.split(' ')[0]} ${'★'.repeat(s)}`).join(', ') : '';
-      const noteKey = `feff28_note_${currentUser}_${key}`;
-      const note = currentUser ? (localStorage.getItem(noteKey) || '') : '';
+      // Note: prefer public (JSONBin) over private (localStorage)
+      const remoteNote = votes[`__note__${currentUser}`] || '';
+      const localNote = currentUser ? (localStorage.getItem(`feff28_note_${currentUser}_${key}`) || '') : '';
+      const note = remoteNote || localNote;
       txt += `${f.t}  ${f.title}  ${myStars}${othersStr}\n`;
       if (note) txt += `    ✏ ${note}\n`;
     });
@@ -1410,7 +1416,9 @@ function exportCSV() {
   // Collect all voter names
   const voters = new Set();
   films.forEach((day, di) => day.films.forEach((f, fi) => {
-    Object.keys(allVotes[filmKey(di,fi)] || {}).forEach(n => voters.add(n));
+    Object.entries(allVotes[filmKey(di,fi)] || {}).forEach(([n,v]) => {
+      if (typeof v === 'number') voters.add(n); // only real voters, no internal keys
+    });
   }));
   const voterList = [...voters];
 
@@ -1421,7 +1429,7 @@ function exportCSV() {
     day.films.forEach((f, fi) => {
       const key = filmKey(di, fi);
       const votes = allVotes[key] || {};
-      const votesCols = voterList.map(n => votes[n] || '');
+      const votesCols = voterList.map(n => typeof votes[n] === 'number' ? votes[n] : '');
       rows.push([day.day, f.t, f.title, ...votesCols].map(esc).join(','));
     });
   });
