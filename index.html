@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FEFF 28 · Diario di visione</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1208;
+    --paper: #f5f0e8;
+    --paper2: #ede8dc;
+    --gold: #c8923a;
+    --gold-light: #e8c98a;
+    --red: #9b2335;
+    --muted: #7a6e60;
+    --border: rgba(26,18,8,0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 2rem 1.5rem 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-top {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.4rem, 5vw, 2rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  header h1 span {
+    color: var(--gold-light);
+    font-style: italic;
+  }
+
+  .festival-dates {
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.5);
+    font-weight: 400;
+    white-space: nowrap;
+  }
+
+  /* Login bar */
+  .login-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .login-bar input {
+    background: rgba(245,240,232,0.1);
+    border: 1px solid rgba(245,240,232,0.25);
+    border-radius: 6px;
+    color: var(--paper);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    outline: none;
+    width: 160px;
+    transition: border-color 0.2s;
+  }
+  .login-bar input::placeholder { color: rgba(245,240,232,0.35); }
+  .login-bar input:focus { border-color: var(--gold-light); }
+
+  .btn-confirm {
+    background: var(--gold);
+    border: none;
+    border-radius: 6px;
+    color: var(--ink);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    padding: 6px 14px;
+    text-transform: uppercase;
+    transition: background 0.2s;
+  }
+  .btn-confirm:hover { background: var(--gold-light); }
+
+  .user-badge {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--gold-light);
+  }
+  .user-badge.visible { display: flex; }
+  .user-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 500;
+  }
+  .btn-change {
+    background: none; border: none;
+    color: rgba(245,240,232,0.4);
+    font-size: 0.7rem;
+    cursor: pointer;
+    text-decoration: underline;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* Sync status */
+  .sync-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #666;
+    display: inline-block;
+    margin-right: 4px;
+    transition: background 0.4s;
+  }
+  .sync-dot.ok { background: #4caf50; }
+  .sync-dot.err { background: var(--red); }
+  .sync-dot.loading { background: var(--gold); animation: pulse 0.8s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .sync-label { font-size: 0.65rem; color: rgba(245,240,232,0.4); letter-spacing: 0.05em; }
+
+  /* Config panel */
+  .config-panel {
+    background: rgba(200,146,58,0.08);
+    border: 1px solid rgba(200,146,58,0.25);
+    border-radius: 10px;
+    margin: 1rem 1.5rem;
+    padding: 1rem 1.25rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    display: none;
+  }
+  .config-panel.visible { display: block; }
+  .config-panel strong { color: var(--gold); }
+  .config-panel input {
+    display: block;
+    width: 100%;
+    margin-top: 0.5rem;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    background: white;
+    outline: none;
+  }
+  .config-panel input:focus { border-color: var(--gold); }
+
+  /* Day nav */
+  .day-nav {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    padding: 0 1.5rem;
+    background: var(--ink);
+    scrollbar-width: none;
+    border-top: 1px solid rgba(245,240,232,0.08);
+  }
+  .day-nav::-webkit-scrollbar { display: none; }
+  .day-tab {
+    flex-shrink: 0;
+    padding: 10px 14px;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.4);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .day-tab:hover { color: var(--gold-light); }
+  .day-tab.active { color: var(--gold-light); border-bottom-color: var(--gold); }
+
+  /* Content */
+  main { padding: 0 0 4rem; }
+
+  .day-section { display: none; padding: 1.25rem 1.5rem; }
+  .day-section.active { display: block; }
+
+  .day-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 400;
+    color: var(--ink);
+    margin-bottom: 0.25rem;
+  }
+  .day-subtitle {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+  }
+
+  /* Film card */
+  .film-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: white;
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  .film-card:hover { box-shadow: 0 2px 12px rgba(26,18,8,0.08); }
+
+  .film-main {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  .film-time-col {
+    background: var(--paper2);
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 56px;
+    border-right: 1px solid var(--border);
+  }
+  .film-time {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .film-body {
+    flex: 1;
+    padding: 12px 14px;
+  }
+
+  .film-title {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+
+  .film-synopsis-preview {
+    font-size: 0.72rem;
+    color: var(--muted);
+    line-height: 1.5;
+    display: none;
+    margin-bottom: 8px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+  }
+  .film-synopsis-preview.open { display: block; }
+
+  .film-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  /* Stars */
+  .stars { display: flex; gap: 2px; }
+  .star {
+    font-size: 1.1rem;
+    cursor: pointer;
+    color: #d4c9b0;
+    transition: color 0.15s, transform 0.1s;
+    line-height: 1;
+    padding: 2px;
+    user-select: none;
+  }
+  .star:hover, .star.on { color: var(--gold); }
+  .star:active { transform: scale(0.85); }
+
+  /* Avatars row */
+  .votes-row {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .vote-chip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.65rem;
+    background: var(--paper2);
+    border-radius: 20px;
+    padding: 2px 7px 2px 3px;
+    color: var(--muted);
+  }
+  .vote-chip-avatar {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.55rem;
+    font-weight: 500;
+    color: white;
+  }
+  .vote-chip-stars { color: var(--gold); letter-spacing: -1px; }
+
+  .toggle-syn {
+    background: none; border: none;
+    font-size: 0.65rem;
+    color: var(--muted);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-family: 'DM Sans', sans-serif;
+    padding: 0;
+    white-space: nowrap;
+  }
+
+  /* Export */
+  .export-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--ink);
+    padding: 12px 1.5rem;
+    display: flex;
+    gap: 10px;
+    z-index: 99;
+  }
+  .btn-export {
+    flex: 1;
+    background: var(--gold);
+    border: none;
+    border-radius: 8px;
+    color: var(--ink);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    padding: 11px;
+    text-transform: uppercase;
+    transition: background 0.2s;
+  }
+  .btn-export:hover { background: var(--gold-light); }
+  .btn-export.secondary {
+    background: rgba(245,240,232,0.08);
+    color: var(--paper);
+    flex: 0 0 auto;
+    padding: 11px 16px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s;
+    z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+
+  /* ─── Mobile optimizations ─────────────────────── */
+  @media (max-width: 480px) {
+    header {
+      padding: 1rem 1rem 0.75rem;
+    }
+    .header-top {
+      margin-bottom: 0.75rem;
+      gap: 0.5rem;
+    }
+    header h1 {
+      font-size: 1.25rem;
+    }
+    .festival-dates {
+      font-size: 0.6rem;
+    }
+    .login-bar input {
+      font-size: 16px; /* prevents iOS auto-zoom */
+      width: 140px;
+      padding: 8px 12px;
+    }
+    .btn-confirm {
+      padding: 8px 14px;
+      font-size: 0.75rem;
+    }
+    .day-tab {
+      padding: 14px 12px; /* min 44px touch target */
+      font-size: 0.65rem;
+    }
+    .day-section {
+      padding: 1rem 0.875rem;
+    }
+    .film-time-col {
+      min-width: 52px;
+      padding: 12px 8px;
+    }
+    .film-time {
+      font-size: 0.9rem;
+    }
+    .film-body {
+      padding: 10px 10px;
+    }
+    .film-title {
+      font-size: 0.8rem;
+    }
+    .star {
+      font-size: 1.4rem;   /* bigger tap target */
+      padding: 4px 3px;
+    }
+    .toggle-syn {
+      font-size: 0.7rem;
+      padding: 4px 0;
+    }
+    .film-synopsis-preview {
+      font-size: 0.75rem;
+    }
+    .export-bar {
+      padding: 10px 1rem;
+      padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    }
+    .btn-export {
+      font-size: 0.72rem;
+      padding: 13px 10px;
+    }
+    main {
+      padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+    }
+    .vote-chip {
+      font-size: 0.68rem;
+      padding: 3px 8px 3px 4px;
+    }
+    .vote-chip-avatar {
+      width: 18px; height: 18px;
+      font-size: 0.6rem;
+    }
+  }
+
+  /* Config notice */
+  .notice {
+    margin: 1.5rem;
+    padding: 1rem 1.25rem;
+    background: rgba(155,35,53,0.06);
+    border: 1px solid rgba(155,35,53,0.2);
+    border-radius: 10px;
+    font-size: 0.8rem;
+    color: var(--red);
+    line-height: 1.6;
+    display: none;
+  }
+  .notice.visible { display: block; }
+  .notice code {
+    background: rgba(155,35,53,0.1);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.75rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <h1>FEFF <span>28</span><br>Diario di visione</h1>
+    <div style="text-align:right">
+      <div class="festival-dates">Udine · 24 apr–2 mag 2026</div>
+      <div style="margin-top:6px">
+        <span class="sync-dot" id="syncDot"></span>
+        <span class="sync-label" id="syncLabel">—</span>
+      </div>
+    </div>
+  </div>
+  <div class="login-bar" id="loginBar">
+    <input type="text" id="nameInput" placeholder="Il tuo nome..." maxlength="20">
+    <button class="btn-confirm" onclick="setUser()">Entra</button>
+  </div>
+  <div class="user-badge" id="userBadge">
+    <div class="user-avatar" id="userAvatar"></div>
+    <span id="userNameLabel"></span>
+    <button class="btn-change" onclick="changeUser()">cambia</button>
+  </div>
+</header>
+
+<div class="notice" id="configNotice">
+  ⚠️ <strong>Configurazione richiesta:</strong> per attivare la sincronizzazione, apri questo file in un editor di testo e sostituisci <code>JSONBIN_API_KEY</code> e <code>JSONBIN_BIN_ID</code> con i tuoi valori da <strong>jsonbin.io</strong>. Le istruzioni complete sono nel README del repository.
+</div>
+
+<nav class="day-nav" id="dayNav"></nav>
+
+<main id="main"></main>
+
+<div class="export-bar">
+  <button class="btn-export" onclick="exportText()">📋 Esporta per Note</button>
+  <button class="btn-export secondary" onclick="refreshData()">↻</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// CONFIGURAZIONE — sostituisci questi valori
+// ═══════════════════════════════════════════════════
+const JSONBIN_API_KEY = '$2a$10$c3gla4n68LrMjjDaWty4XOrfayVrMdU5nW/MSmyfpWjQfrSwIkz/2';   // es. $2a$10$...
+const JSONBIN_BIN_ID  = '69e5ed2e36566621a8d0d388';    // es. 664abc123...
+// ═══════════════════════════════════════════════════
+
+const BASE_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+const HEADERS = {
+  'Content-Type': 'application/json',
+  'X-Master-Key': JSONBIN_API_KEY,
+  'X-Bin-Versioning': 'false'
+};
+
+const AVATAR_COLORS = ['#c8923a','#9b2335','#4a7c6f','#5c4a8f','#2e6da4','#7a6e60'];
+function avatarColor(name) {
+  let h = 0; for(let c of name) h += c.charCodeAt(0);
+  return AVATAR_COLORS[h % AVATAR_COLORS.length];
+}
+function initials(name) {
+  return name.split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2);
+}
+
+const films = [
+  { day:"Ven 24 Apr", label:"Ven 24/4", films:[
+    {t:"14:00",title:"HULA GIRLS",syn:"Giappone 2006. In un villaggio minerario del Tohoku in crisi, giovani donne si allenano per diventare ballerine di hula e salvare la comunità. Dramma commovente ispirato a una storia vera."},
+    {t:"16:20",title:"UNDER THE OPEN SKY",syn:"Giappone 2020. Un ex yakuza scarcerato dopo quindici anni tenta di reinserirsi nella società, cercando di costruire una vita nuova fuori dall'unico mondo che ha sempre conosciuto."},
+    {t:"19:15",title:"OPENING FEFF28",syn:"Cerimonia inaugurale del 28° Far East Film Festival di Udine."},
+    {t:"22:30",title:"KUNG FU",syn:"Hong Kong 2004 (Stephen Chow). Negli anni '40 a Shanghai, un aspirante gangster si scontra con maestri di arti marziali nascosti in un caseggiato popolare. Commedia d'azione irresistibile."}
+  ]},
+  { day:"Sab 25 Apr", label:"Sab 25/4", films:[
+    {t:"09:00",title:"THE SNOWBALL ON A SUNNY DAY",syn:"Corea del Sud 2025. Una commedia romantica sui piccoli miracoli e le coincidenze che cambiano il corso delle relazioni sentimentali in una giornata di sole inattesa."},
+    {t:"11:20",title:"AH GIRL",syn:"Singapore 2025. Ritratto generazionale di una giovane donna singaporiana che naviga aspettative familiari e identità personale in una città in rapida trasformazione."},
+    {t:"14:00",title:"5 CENTIMETERS PER SECOND",syn:"Giappone 2007 (Makoto Shinkai). Tre storie sulla distanza e il tempo che separano due amici d'infanzia nel corso degli anni. Animazione poetica e visivamente mozzafiato."},
+    {t:"16:15",title:"WE'RE NOTHING AT ALL",syn:"Giappone 2022. Due giovani con vite ai margini si incontrano per caso e trovano nell'altro una forma inaspettata di connessione. Dramma minimalista sull'isolamento."},
+    {t:"19:00",title:"PERFECT DAYS",syn:"Giappone/Germania 2023 (Wim Wenders). Hirayama, addetto alle pulizie dei bagni pubblici di Tokyo, conduce una vita di quieta routine e profonda attenzione ai piccoli piaceri. Premiato a Cannes con Koji Yakusho."},
+    {t:"21:40",title:"GHOST IN THE CELL",syn:"Corea del Sud 2025. Thriller carcerario: un detenuto inizia a ricevere messaggi impossibili dall'interno della prigione, innescando eventi che mettono in discussione la realtà stessa."},
+    {t:"23:40",title:"THA RAE: THE EXORCIST",syn:"Thailandia 2025. Horror soprannaturale ambientato in un villaggio rurale dove un esorcista affronta forze oscure legate ad antichi rituali locali."}
+  ]},
+  { day:"Dom 26 Apr", label:"Dom 26/4", films:[
+    {t:"09:00",title:"LINKA LINKA",syn:"Mongolia 2025. Un viaggio on the road attraverso le steppe mongole che diventa una riflessione sulla tradizione nomade e la modernità che avanza."},
+    {t:"11:00",title:"FUJIKO",syn:"Giappone 2024. Documentario dedicato a Fujiko F. Fujio, leggendario mangaka creatore di Doraemon, esplorando la sua vita e il suo processo creativo."},
+    {t:"14:00",title:"I BLEW OUT THE CANDLES BEFORE MAKING A WISH",syn:"Taiwan 2025. Un compleanno diventa l'occasione per fare i conti con rimpianti e desideri non espressi. Dramma familiare dalla delicata sensibilità taiwanese."},
+    {t:"16:10",title:"KOKUHO",syn:"Giappone 2025. Thriller o dramma che ruota attorno a un tesoro nazionale conteso, tra identità culturale e interessi personali in gioco."},
+    {t:"19:20",title:"A FOGGY TALE",syn:"Cina 2025. Noir atmosferico ambientato in una città avvolta dalla nebbia, dove un investigatore ricostruisce una storia di tradimenti e sparizioni."},
+    {t:"21:50",title:"HIJACKED",syn:"Corea del Sud 2024. Thriller ad alta tensione: un volo dirottato, passeggeri che devono trovare il modo di sopravvivere. Spettacolo d'azione con ritmo serrato."}
+  ]},
+  { day:"Lun 27 Apr", label:"Lun 27/4", films:[
+    {t:"08:30",title:"NIGHT KING",syn:"Hong Kong 2025. Dramma criminale sull'ascesa e la caduta di un boss dell'underground notturno di Hong Kong."},
+    {t:"10:55",title:"SOMEONE LIKE ME",syn:"Cina 2025. Commedia romantica contemporanea sull'incontro tra due persone apparentemente opposte che scoprono di avere più in comune di quanto credano."},
+    {t:"13:00",title:"FILIPIÑANA",syn:"Filippine 2025. Racconto corale sull'identità filippina oggi, tra emigrazione, familia e le contraddizioni di un paese in cerca di sé stesso."},
+    {t:"15:00",title:"THE WORLD OF LOVE",syn:"Corea del Sud 2025. Drama romantico che esplora le diverse forme dell'amore — filiale, romantico, amicale — attraverso storie parallele."},
+    {t:"17:20",title:"THE SEOUL GUARDIANS",syn:"Corea del Sud 2024. Action movie sui generis: un gruppo improbabile di difensori della città di Seoul affronta una minaccia soprannaturale."},
+    {t:"19:15",title:"KY NAM INN",syn:"Vietnam 2025. Drama ambientato in un antico inn vietnamita che custodisce segreti di famiglia attraverso le generazioni."},
+    {t:"21:55",title:"ROAD TO VENDETTA",syn:"Hong Kong/Cina 2025. Thriller di vendetta: un uomo torna dal passato per fare i conti con chi gli ha distrutto la vita."}
+  ]},
+  { day:"Mar 28 Apr", label:"Mar 28/4", films:[
+    {t:"08:30",title:"THE LAST BLOSSOM",syn:"Giappone 2025. Dramma sulla fine della vita e sulla bellezza effimera, con i ciliegi in fiore come metafora centrale del tempo che passa."},
+    {t:"10:15",title:"TAKE OFF",syn:"Corea del Sud 2025. Storia di formazione sportiva: un giovane promessa lotta contro le aspettative e i propri limiti per raggiungere il suo sogno."},
+    {t:"12:30",title:"THE SICKNESS UNTO LOVE",syn:"Taiwan 2025. Drama d'amore con sfumature esistenziali: due persone alle prese con la malattia trovano nell'altro una ragione per continuare."},
+    {t:"14:35",title:"DEEP QUIET ROOM",syn:"Giappone 2025. Dramma minimalista in uno spazio claustrofobico dove il silenzio rivela più delle parole."},
+    {t:"16:40",title:"JET LAG IN SUMMER",syn:"Cina 2025. Commedia romantica: due sconosciuti bloccati in un aeroporto durante l'estate intraprendono un viaggio emotivo inatteso."},
+    {t:"19:15",title:"MY NAME",syn:"Corea del Sud 2021. Una donna si infiltra nella polizia per vendicare la morte del padre, ma la verità è più complicata di quanto immaginasse."},
+    {t:"21:30",title:"SUZUKI = BAKUDAN",syn:"Giappone 2025. Commedia d'azione grottesca con un protagonista dal nome improbabile coinvolto in situazioni esplosive."}
+  ]},
+  { day:"Mer 29 Apr", label:"Mer 29/4", films:[
+    {t:"09:00",title:"A MIGHTY ADVENTURE",syn:"Cina 2025. Avventura fantastica con eroi improbabili in un mondo straordinario, tra coraggio e amicizia."},
+    {t:"10:30",title:"MIDNIGHT GIRLS",syn:"Giappone/Corea 2025. Ritratto notturno di giovani donne ai margini, tra sogni e sopravvivenza nelle metropoli asiatiche."},
+    {t:"14:00",title:"TIGER",syn:"Corea del Sud 2025. Drama su una figura imponente soprannominata 'tigre' per il carattere feroce e determinato, tra sport o crimine."},
+    {t:"16:20",title:"SUNSHINE WOMEN'S CHOIR",syn:"Giappone 2025. Commedia corale su un coro femminile amatoriale che si prepara a una gara importante, tra amicizie e riscoperta di sé."},
+    {t:"19:15",title:"90 METERS",syn:"Giappone 2025. Drama sportivo: 90 metri come distanza simbolica tra il limite umano e il sogno, in un atleta che non si arrende."},
+    {t:"21:30",title:"THE SHADOW'S EDGE",syn:"Hong Kong 2025. Thriller ambientato ai confini dell'ombra, tra spie e identità doppie in una città senza respiro."}
+  ]},
+  { day:"Gio 30 Apr", label:"Gio 30/4", films:[
+    {t:"09:00",title:"ANOTHER WORLD",syn:"Cina 2025. Fantascienza o fantasy: un protagonista si ritrova in una dimensione parallela che rispecchia la sua vita in modo distorto."},
+    {t:"11:05",title:"ONCE WE WERE US",syn:"Corea del Sud 2025. Drama sentimentale su una coppia che si ritrova anni dopo la rottura e deve fare i conti con ciò che erano e ciò che sono diventati."},
+    {t:"14:30",title:"UNCHAINED",syn:"Filippine 2025. Dramma sulla libertà: un individuo oppresso fisicamente o socialmente lotta per spezzare le proprie catene."},
+    {t:"16:35",title:"MEASURE IN LOVE",syn:"Giappone 2025. Drama romantico e filosofico: come si misura l'amore? Attraverso il tempo, il sacrificio, la presenza quotidiana."},
+    {t:"19:15",title:"NUMBER ONE",syn:"Corea del Sud 2025. Satira o dramma sull'ossessione coreana per il primato, il successo e la competizione a ogni costo."},
+    {t:"21:20",title:"ALL GREENS",syn:"Giappone 2025. Commedia agricola: un personaggio urbano torna alla terra e scopre un ritmo di vita completamente diverso."},
+    {t:"23:40",title:"UNIDENTIFIED MURDER",syn:"Corea del Sud 2025. Thriller poliziesco su un omicidio con movente e colpevole apparentemente impossibili da identificare."}
+  ]},
+  { day:"Ven 1 Mag", label:"Ven 1/5", films:[
+    {t:"09:00",title:"THE FOX KING",syn:"Cina 2025. Fantasy storico ispirato ai miti cinesi sulla volpe a nove code, creatura soprannaturale ambigua tra bene e male."},
+    {t:"10:50",title:"TOKYO TAXI",syn:"Giappone 2025. Drama su un tassista notturno di Tokyo e i passeggeri che attraversano la sua vita, ciascuno con una storia da raccontare."},
+    {t:"12:50",title:"DOPAMINE",syn:"Corea del Sud 2025. Drama sulle dipendenze contemporanee — social, app di incontri, videogiochi — e la ricerca di soddisfazione immediata."},
+    {t:"14:40",title:"THE OLD MAN AND HIS CAR",syn:"Giappone 2025. Road movie delicato su un anziano e la sua vecchia automobile in un ultimo viaggio carico di significati."},
+    {t:"16:25",title:"THE KING'S WARDEN",syn:"Cina 2025. Drama storico di palazzo: un guardiano fedele al sovrano si trova a dover scegliere tra lealtà assoluta e giustizia."},
+    {t:"19:00",title:"MOTHER BHUMI",syn:"India 2025. Epic drama sulla terra come madre: una storia di contadini, lotte agrarie e legami ancestrali con il suolo."},
+    {t:"21:25",title:"TUNNELS: SUN IN THE DARK",syn:"Cina 2025. Thriller/disaster movie: una rete di tunnel sotterranei, la luce solare come miraggio da raggiungere a tutti i costi."},
+    {t:"23:45",title:"THE LAST SHOT",syn:"Hong Kong 2025. Action thriller: un ex tiratore scelto torna in campo per un ultimo, decisivo colpo che potrebbe cambiare tutto."}
+  ]},
+  { day:"Sab 2 Mag", label:"Sab 2/5", films:[
+    {t:"09:00",title:"A WRITER'S ODYSSEY 2",syn:"Cina 2025. Sequel del fantasy d'azione del 2021: uno scrittore continua a vivere parallelamente la sua storia e quella del suo romanzo, in un intreccio di mondi."},
+    {t:"11:25",title:"CIAO UFO",syn:"Italia/Giappone 2025. Curiosa coproduzione su un incontro ravvicinato che cambia la vita di un gruppo di personaggi, tra comicità e meraviglia."},
+    {t:"13:50",title:"GOHAN",syn:"Giappone 2025. 'Gohan' significa riso cotto e pasto: un film sul cibo come linguaggio d'amore, famiglia e identità culturale giapponese."},
+    {t:"16:25",title:"UNEXPECTED FAMILY",syn:"Corea del Sud 2025. Commedia familiare: persone non legate da sangue si ritrovano a formare una famiglia improbabile ma straordinariamente autentica."},
+    {t:"19:00",title:"BLADES OF THE GUARDIANS: WIND RISES IN THE DESERT",syn:"Cina 2024. Action fantasy wuxia ambientato nel deserto: guardiani lama proteggono il mondo da forze oscure in scontri spettacolari."},
+    {t:"21:30",title:"BLOOD MOON RITE 8",syn:"Cina/Hong Kong 2025. Horror soprannaturale: l'ottavo rituale della luna di sangue si avvicina e con esso un'entità antica e spietata."}
+  ]}
+];
+
+// State
+let currentUser = localStorage.getItem('feff28_user') || '';
+let allVotes = {};   // { filmKey: { userName: stars } }
+let currentDay = 0;
+let synOpen = {};
+
+const configured = JSONBIN_API_KEY !== 'JSONBIN_API_KEY' && JSONBIN_BIN_ID !== 'JSONBIN_BIN_ID';
+
+function filmKey(dayIdx, filmIdx) { return `d${dayIdx}_f${filmIdx}`; }
+
+// ─── Sync ───────────────────────────────────────────
+function setSyncStatus(state, label) {
+  const dot = document.getElementById('syncDot');
+  const lbl = document.getElementById('syncLabel');
+  dot.className = 'sync-dot ' + state;
+  lbl.textContent = label;
+}
+
+async function loadVotes() {
+  if (!configured) { setSyncStatus('err','non configurato'); return; }
+  setSyncStatus('loading','caricamento…');
+  try {
+    const r = await fetch(BASE_URL + '/latest', { headers: {'X-Master-Key': JSONBIN_API_KEY} });
+    if (!r.ok) throw new Error(r.status);
+    const data = await r.json();
+    allVotes = data.record.votes || {};
+    setSyncStatus('ok','sincronizzato');
+    renderAll();
+  } catch(e) {
+    setSyncStatus('err','errore rete');
+  }
+}
+
+async function saveVotes() {
+  if (!configured) return;
+  setSyncStatus('loading','salvataggio…');
+  try {
+    await fetch(BASE_URL, {
+      method: 'PUT',
+      headers: HEADERS,
+      body: JSON.stringify({ votes: allVotes })
+    });
+    setSyncStatus('ok','salvato');
+  } catch(e) {
+    setSyncStatus('err','errore salvataggio');
+  }
+}
+
+function refreshData() { loadVotes(); }
+
+// ─── User ────────────────────────────────────────────
+function setUser() {
+  const val = document.getElementById('nameInput').value.trim();
+  if (!val) return;
+  currentUser = val;
+  localStorage.setItem('feff28_user', val);
+  showUserBadge();
+  renderAll();
+}
+function changeUser() {
+  currentUser = '';
+  localStorage.removeItem('feff28_user');
+  document.getElementById('userBadge').classList.remove('visible');
+  document.getElementById('loginBar').style.display = 'flex';
+  document.getElementById('nameInput').value = '';
+}
+function showUserBadge() {
+  document.getElementById('loginBar').style.display = 'none';
+  const badge = document.getElementById('userBadge');
+  badge.classList.add('visible');
+  document.getElementById('userAvatar').textContent = initials(currentUser);
+  document.getElementById('userAvatar').style.background = avatarColor(currentUser);
+  document.getElementById('userNameLabel').textContent = currentUser;
+}
+
+// ─── Rating ──────────────────────────────────────────
+function rate(dayIdx, filmIdx, stars) {
+  if (!currentUser) { showToast('Inserisci prima il tuo nome ↑'); return; }
+  const key = filmKey(dayIdx, filmIdx);
+  if (!allVotes[key]) allVotes[key] = {};
+  allVotes[key][currentUser] = stars;
+  renderAll();
+  saveVotes();
+}
+
+// ─── Render ───────────────────────────────────────────
+function buildNav() {
+  const nav = document.getElementById('dayNav');
+  nav.innerHTML = films.map((d,i) =>
+    `<div class="day-tab ${i===0?'active':''}" onclick="switchDay(${i})">${d.label}</div>`
+  ).join('');
+}
+
+function switchDay(i) {
+  currentDay = i;
+  document.querySelectorAll('.day-tab').forEach((t,j) => t.classList.toggle('active', j===i));
+  document.querySelectorAll('.day-section').forEach((s,j) => s.classList.toggle('active', j===i));
+}
+
+function renderAll() {
+  const main = document.getElementById('main');
+  main.innerHTML = films.map((day, di) => {
+    const filmsHtml = day.films.map((f, fi) => {
+      const key = filmKey(di, fi);
+      const myRating = currentUser && allVotes[key] ? (allVotes[key][currentUser] || 0) : 0;
+      const otherVotes = allVotes[key] ? Object.entries(allVotes[key]) : [];
+      const starsHtml = [1,2,3,4,5].map(s =>
+        `<span class="star ${myRating>=s?'on':''}" onclick="rate(${di},${fi},${s})">★</span>`
+      ).join('');
+      const otherHtml = otherVotes.length > 0 ? `<div class="votes-row">${
+        otherVotes.map(([name,stars]) => `
+          <div class="vote-chip">
+            <div class="vote-chip-avatar" style="background:${avatarColor(name)}">${initials(name)}</div>
+            <span class="vote-chip-stars">${'★'.repeat(stars)}</span>
+          </div>`).join('')
+      }</div>` : '';
+      const synKey = key;
+      const synVisible = synOpen[synKey];
+      return `<div class="film-card">
+        <div class="film-main">
+          <div class="film-time-col"><span class="film-time">${f.t}</span></div>
+          <div class="film-body">
+            <div class="film-title">${f.title}</div>
+            ${f.syn ? `<div class="film-synopsis-preview ${synVisible?'open':''}" id="syn-${synKey}">${f.syn}</div>` : ''}
+            <div class="film-actions">
+              <div class="stars">${starsHtml}</div>
+              ${f.syn ? `<button class="toggle-syn" onclick="toggleSyn('${synKey}')">${synVisible?'nascondi ▲':'trama ▼'}</button>` : ''}
+            </div>
+            ${otherHtml}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="day-section ${di===currentDay?'active':''}" id="day-${di}">
+      <div class="day-title">${day.day}</div>
+      <div class="day-subtitle">Teatro Nuovo · Sala 2</div>
+      ${filmsHtml}
+    </div>`;
+  }).join('');
+}
+
+function toggleSyn(key) {
+  synOpen[key] = !synOpen[key];
+  renderAll();
+}
+
+// ─── Export ───────────────────────────────────────────
+function exportText() {
+  let txt = '🎬 FEFF 28 — Diario di visione\n';
+  txt += 'Udine, 24 apr – 2 mag 2026\n\n';
+  films.forEach((day, di) => {
+    txt += `━━━ ${day.day} ━━━\n`;
+    day.films.forEach((f, fi) => {
+      const key = filmKey(di, fi);
+      const votes = allVotes[key] || {};
+      const myR = currentUser ? (votes[currentUser] || 0) : 0;
+      const myStars = myR > 0 ? ' ' + '★'.repeat(myR) + '☆'.repeat(5-myR) : ' ·····';
+      const others = Object.entries(votes).filter(([n])=>n!==currentUser);
+      const othersStr = others.length ? ' | ' + others.map(([n,s])=>`${n.split(' ')[0]} ${'★'.repeat(s)}`).join(', ') : '';
+      txt += `${f.t}  ${f.title}${myStars}${othersStr}\n`;
+    });
+    txt += '\n';
+  });
+  navigator.clipboard.writeText(txt).then(() => showToast('Copiato! Incolla nelle Note 📋'));
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ─── Init ─────────────────────────────────────────────
+if (!configured) document.getElementById('configNotice').classList.add('visible');
+if (currentUser) showUserBadge();
+buildNav();
+renderAll();
+loadVotes();
+</script>
+</body>
+</html>
