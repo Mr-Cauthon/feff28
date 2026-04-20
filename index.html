@@ -1061,7 +1061,7 @@ function renderAll() {
     const filmsHtml = day.films.map((f, fi) => {
       const key = filmKey(di, fi);
       const myRating = currentUser && allVotes[key] ? (allVotes[key][currentUser] || 0) : 0;
-      const otherVotes = allVotes[key] ? Object.entries(allVotes[key]).filter(([k,v]) => v !== '__unseen__' && !k.startsWith('__note__')) : [];
+      const otherVotes = allVotes[key] ? Object.entries(allVotes[key]).filter(([k,v]) => v !== '__unseen__' && !k.startsWith('__note__') && !k.startsWith('__notepub__')) : [];
       const starsHtml = [1,2,3,4,5].map(s =>
         `<span class="star ${myRating>=s?'on':''}" data-rate="${s}" data-day="${di}" data-film="${fi}">★</span>`
       ).join('');
@@ -1075,20 +1075,19 @@ function renderAll() {
       }</div>` : '';
       const noteKey = `feff28_note_${currentUser}_${key}`;
       const notePrivacyKey = `feff28_notepub_${currentUser}_${key}`;
-      const isNotePublic = currentUser ? (localStorage.getItem(notePrivacyKey) === '1') : false;
+      // isNotePublic: default TRUE. Only false if __notepub__ explicitly === false on JSONBin.
+      const remotePrivFlag = currentUser && allVotes[key] ? allVotes[key][`__notepub__${currentUser}`] : undefined;
+      const isNotePublic = remotePrivFlag !== false; // default public
       // Read note: if public, from allVotes; if private, from localStorage
       const noteValLocal = currentUser ? (localStorage.getItem(noteKey) || '') : '';
-      const noteValRemote = currentUser && allVotes[key] ? (() => {
-        const v = allVotes[key][`__note__${currentUser}`];
-        return v || '';
-      })() : '';
+      const noteValRemote = currentUser && allVotes[key] ? (allVotes[key][`__note__${currentUser}`] || '') : '';
       const noteVal = isNotePublic ? noteValRemote : noteValLocal;
       const noteHtml = currentUser ? `
         <div class="note-header">
           <span class="note-label">nota</span>
           <button class="note-privacy-btn ${isNotePublic?'public':''}" data-nday="${di}" data-nfilm="${fi}">${isNotePublic?'🌐 pubblica':'🔒 privata'}</button>
         </div>
-        <textarea class="note-area" data-notekey="${noteKey}" data-noteprivkey="${notePrivacyKey}" data-nday="${di}" data-nfilm="${fi}" data-ispublic="${isNotePublic?'1':'0'}" placeholder="${isNotePublic?'Nota pubblica — sincronizzata su tutti i tuoi dispositivi.':'Nota privata — salvata solo su questo dispositivo.'}" rows="2">${noteVal}</textarea>
+        <textarea class="note-area" data-notekey="${noteKey}" data-noteprivkey="${notePrivacyKey}" data-nday="${di}" data-nfilm="${fi}" data-ispublic="${isNotePublic?'1':'0'}" placeholder="${isNotePublic?'Nota pubblica — sincronizzata su tutti i dispositivi.':'Nota privata — salvata solo su questo dispositivo.'}" rows="2">${noteVal}</textarea>
         <button class="note-save-btn" data-nday="${di}" data-nfilm="${fi}">salva nota</button>` : '';
       const isUnseen = currentUser && allVotes[key] ? (allVotes[key][currentUser] === '__unseen__') : false;
       const synKey = key;
@@ -1147,7 +1146,7 @@ function renderRanking(container) {
   films.forEach((day, di) => {
     day.films.forEach((f, fi) => {
       const key = filmKey(di, fi);
-      const votes = allVotes[key] ? Object.values(allVotes[key]).filter(v => v !== '__unseen__' && !String(v).startsWith('__note__') && typeof v === 'number') : [];
+      const votes = allVotes[key] ? Object.values(allVotes[key]).filter(v => typeof v === 'number') : [];
       if (votes.length === 0) return;
       const avg = votes.reduce((a,b) => a+b, 0) / votes.length;
       ranked.push({ title: f.title, day: day.day, avg, count: votes.length });
@@ -1209,13 +1208,21 @@ document.addEventListener('click', function(e) {
   const isPublic = ta.dataset.ispublic === '1';
   if (isPublic) {
     if (!allVotes[key]) allVotes[key] = {};
+    // public is default — no flag needed
     if (text) allVotes[key][`__note__${currentUser}`] = text;
-    else { delete allVotes[key][`__note__${currentUser}`]; if (!Object.keys(allVotes[key]).length) delete allVotes[key]; }
+    else { delete allVotes[key][`__note__${currentUser}`]; }
     localStorage.setItem('feff28_votes_cache', JSON.stringify(allVotes));
     saveVotes();
   } else {
     if (text) localStorage.setItem(ta.dataset.notekey, text);
     else localStorage.removeItem(ta.dataset.notekey);
+    // Extra safety: ensure nothing leaks to JSONBin
+    if (allVotes[key]) {
+      delete allVotes[key][`__note__${currentUser}`];
+      if (!Object.keys(allVotes[key]).length) delete allVotes[key];
+      localStorage.setItem('feff28_votes_cache', JSON.stringify(allVotes));
+      saveVotes();
+    }
   }
   btn.textContent = '✓ salvato';
   btn.classList.add('saved');
@@ -1235,26 +1242,22 @@ document.addEventListener('click', function(e) {
   const wasPublic = localStorage.getItem(privKey) === '1';
   const newPublic = !wasPublic;
   localStorage.setItem(privKey, newPublic ? '1' : '0');
-  // Migrate note content between storage systems
+  if (!allVotes[key]) allVotes[key] = {};
   if (newPublic) {
-    // moving private→public: read local, write to allVotes
+    // moving private→public: remove private flag, migrate text to allVotes
+    delete allVotes[key][`__notepub__${currentUser}`];
     const localText = localStorage.getItem(noteKey) || '';
-    if (!allVotes[key]) allVotes[key] = {};
     if (localText) allVotes[key][`__note__${currentUser}`] = localText;
-    localStorage.setItem('feff28_votes_cache', JSON.stringify(allVotes));
-    saveVotes();
+    if (!Object.keys(allVotes[key]).length) delete allVotes[key];
   } else {
-    // moving public→private: read from allVotes, write to local
-    const remoteText = allVotes[key] ? (allVotes[key][`__note__${currentUser}`] || '') : '';
+    // moving public→private: set flag to false, migrate text to localStorage, WIPE from allVotes
+    allVotes[key][`__notepub__${currentUser}`] = false;
+    const remoteText = allVotes[key][`__note__${currentUser}`] || '';
     if (remoteText) localStorage.setItem(noteKey, remoteText);
-    // Remove from allVotes
-    if (allVotes[key]) {
-      delete allVotes[key][`__note__${currentUser}`];
-      if (Object.keys(allVotes[key]).length === 0) delete allVotes[key];
-    }
-    localStorage.setItem('feff28_votes_cache', JSON.stringify(allVotes));
-    saveVotes();
+    delete allVotes[key][`__note__${currentUser}`]; // ensures nothing remains on JSONBin
   }
+  localStorage.setItem('feff28_votes_cache', JSON.stringify(allVotes));
+  saveVotes();
   renderAll();
 });
 
@@ -1292,7 +1295,7 @@ function getPersonStats(name) {
       const key = filmKey(di, fi);
       const val = allVotes[key] ? allVotes[key][name] : undefined;
       if (val === '__unseen__') { unseen++; return; }
-      if (typeof val === 'string' && val.startsWith('__note__')) return;
+      if (typeof val === 'string') return;
       const r = val || 0;
       if (r > 0) {
         voted++; ratingSum += r;
