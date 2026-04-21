@@ -38,6 +38,27 @@
     --header-text: rgba(245,240,232,0.9);
     --header-muted: rgba(245,240,232,0.4);
   }
+
+  /* Dark mode ticket overrides */
+  :root.dark .film-card.booked-card { background: #2a1a18; outline-color: #c0392b; }
+  :root.dark .film-card.booked-card .film-body { background: #2a1a18; }
+  :root.dark .film-card.booked-card .film-title { color: #f0ece4; }
+  :root.dark .film-card.booked-card .film-time-col::before,
+  :root.dark .film-card.booked-card .film-time-col::after { background: var(--paper); }
+  :root.dark .film-card.booked-card.past-card { background: #1e1210; outline-color: #8b2a20; }
+  :root.dark .film-card.booked-card.past-card .film-body { background: #1e1210; }
+  :root.dark .film-card.booked-card.past-card .film-time-col::before,
+  :root.dark .film-card.booked-card.past-card .film-time-col::after { background: var(--paper); border-color: #8b2a20; }
+  :root.dark .film-card:not(.booked-card) { background: var(--card-bg); }
+  :root.dark .note-area { background: var(--paper2); color: var(--ink); border-color: rgba(240,236,228,0.15); }
+  :root.dark .film-synopsis-preview { border-top-color: rgba(240,236,228,0.1); }
+  :root.dark .vote-chip { background: var(--paper2); }
+  :root.dark .film-time-col { background: var(--paper2); border-right-color: rgba(240,236,228,0.08); }
+  :root.dark .rank-row { border-bottom-color: rgba(240,236,228,0.08); background: transparent; }
+  :root.dark .rank-row.gold { background: rgba(200,146,58,0.08); }
+  :root.dark .rank-row.silver { background: rgba(170,170,170,0.05); }
+  :root.dark .rank-row.bronze { background: rgba(176,112,64,0.05); }
+  :root.dark .stat-card { background: var(--paper2); }
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
