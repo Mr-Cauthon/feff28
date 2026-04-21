@@ -497,6 +497,14 @@
   .film-card:not(.booked-card) { opacity: 0.55; }
   .film-card:not(.booked-card):hover { opacity: 1; transition: opacity 0.2s; }
 
+  /* Past booked: only time column darkens */
+  .film-card.booked-card.past-card .film-time-col { background: #8b2a20; }
+  .film-card.booked-card.past-card .film-time { color: rgba(255,255,255,0.7); }
+  .film-card.booked-card.past-card .film-end { color: rgba(255,255,255,0.45); }
+  .film-card.booked-card.past-card .book-badge { opacity: 0.5; }
+  .film-card.booked-card.past-card .serial-num { color: rgba(255,255,255,0.25); }
+  .film-card.booked-card.past-card { opacity: 0.75; }
+
   /* Booked: ticket style */
   @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap');
 
@@ -1287,7 +1295,14 @@ function buildNav() {
     if (currentUser) {
       d.films.forEach((f, fi) => {
         const key = filmKey(i, fi);
-        if (allVotes[key] && allVotes[key][`__book__${currentUser}`] === true) booked++;
+        if (allVotes[key] && allVotes[key][`__book__${currentUser}`] === true) {
+          // Only count if film hasn't ended yet
+          const dur = DURATIONS[f.title] || 120;
+          const [h,m] = f.t.split(':').map(Number);
+          const now = new Date();
+          const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m + dur);
+          if (now <= end) booked++;
+        }
       });
     }
     const badge = booked > 0 ? `<span class="tab-badge">${booked}</span>` : '';
@@ -1325,6 +1340,13 @@ function renderAll() {
           </div>`).join('')
       }</div>` : '';
       const isBooked = currentUser && allVotes[key] ? (allVotes[key][`__book__${currentUser}`] === true) : false;
+      const isPast = (() => {
+        const dur = DURATIONS[f.title] || 120;
+        const [h,m] = f.t.split(':').map(Number);
+        const now = new Date();
+        const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m + dur);
+        return now > end;
+      })();
       const serialNum = String(Math.abs((di*100+fi)*7919 % 99999)).padStart(5,'0');
       const noteKey = `feff28_note_${currentUser}_${key}`;
       const notePrivacyKey = `feff28_notepub_${currentUser}_${key}`;
@@ -1361,7 +1383,7 @@ function renderAll() {
         </div>` : '';
       const synKey = key;
       const synVisible = synOpen[synKey];
-      return `<div class="film-card${isBooked?' booked-card':''}">
+      return `<div class="film-card${isBooked?' booked-card':''}${isBooked&&isPast?' past-card':''}">
         <div class="film-main">
           <div class="film-time-col">
             <span class="film-time">${f.t}</span>
@@ -1819,7 +1841,7 @@ buildNav();
 renderAll();
 loadVotes();
 updateNextFilm();
-setInterval(updateNextFilm, 60000);
+setInterval(() => { updateNextFilm(); buildNav(); }, 60000);
 </script>
 </body>
 </html>
