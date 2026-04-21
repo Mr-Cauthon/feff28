@@ -886,8 +886,8 @@
 // ═══════════════════════════════════════════════════
 // CONFIGURAZIONE — sostituisci questi valori
 // ═══════════════════════════════════════════════════
-const JSONBIN_API_KEY = '$2a$10$c3gla4n68LrMjjDaWty4XOrfayVrMdU5nW/MSmyfpWjQfrSwIkz/2';   // es. $2a$10$...
-const JSONBIN_BIN_ID  = '69e5ed2e36566621a8d0d388';    // es. 664abc123...
+const JSONBIN_API_KEY = 'JSONBIN_API_KEY';   // es. $2a$10$...
+const JSONBIN_BIN_ID  = 'JSONBIN_BIN_ID';    // es. 664abc123...
 // ═══════════════════════════════════════════════════
 
 const BASE_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
@@ -1523,8 +1523,7 @@ function updateNextFilm() {
       if (!any) any = candidate;
       if (!booked && currentUser) {
         const key = filmKey(dayIdx, films[dayIdx].films.indexOf(f));
-        const bkey = `feff28_book_${currentUser}_${key}`;
-        if (localStorage.getItem(bkey) === '1') booked = candidate;
+        if (allVotes[key] && allVotes[key][`__book__${currentUser}`] === true) booked = candidate;
       }
     }
     const found = booked || any;
@@ -1631,6 +1630,8 @@ document.addEventListener('click', function(e) {
   }
   localStorage.setItem('feff28_votes_cache', JSON.stringify(allVotes));
   renderAll();
+  buildNav();
+  updateNextFilm();
   saveVotes();
 });
 
