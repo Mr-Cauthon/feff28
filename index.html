@@ -212,6 +212,23 @@
   .day-tab.tab-rank:hover { color: #fff; background: rgba(200,146,58,0.25); }
   .day-tab.tab-rank.active { color: #fff; background: var(--gold); border-bottom-color: var(--gold); }
 
+  /* Next film banner */
+  .next-film-bar {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 8px 1.5rem;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(245,240,232,0.08);
+  }
+  .next-film-bar.hidden { display: none; }
+  .next-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); flex-shrink: 0; animation: pulse 1.5s infinite; }
+  .next-label { color: rgba(245,240,232,0.45); letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.6rem; }
+  .next-title { color: var(--gold-light); font-weight: 500; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .next-time { color: rgba(245,240,232,0.5); flex-shrink: 0; }
+
   /* Content */
   main { padding: 0 0 4rem; }
 
@@ -410,8 +427,8 @@
   }
   .note-privacy-btn.public { border-color: var(--gold); color: var(--gold); background: rgba(200,146,58,0.06); }
 
-  /* Unseen toggle */
-  .btn-unseen {
+  /* Booked toggle */
+  .btn-book {
     background: none; border: none;
     cursor: pointer; padding: 3px 6px;
     font-size: 1.2rem; line-height: 1;
@@ -425,13 +442,21 @@
     border-radius: 6px;
     border: 1px solid transparent;
   }
-  .btn-unseen:hover { color: var(--muted); background: var(--paper2); border-color: var(--border); }
-  .btn-unseen.unseen { color: var(--red); opacity: 1; }
+  .btn-book:hover { color: var(--muted); background: var(--paper2); border-color: var(--border); }
+  .btn-book.booked { color: #4a7c6f; }
   @media (max-width: 480px) {
-    .btn-unseen { font-size: 1.1rem; min-width: 28px; min-height: 28px; }
+    .btn-book { font-size: 1.1rem; min-width: 28px; min-height: 28px; }
   }
-  .film-card.unseen { opacity: 0.42; }
-  .film-card.unseen .film-title { text-decoration: line-through; text-decoration-color: var(--muted); }
+  .film-card .book-badge {
+    display: none;
+    font-size: 0.55rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: #4a7c6f; font-weight: 500; margin-top: 3px;
+  }
+  .film-card.booked-card { border-color: rgba(74,124,111,0.4); background: #fff; }
+  .film-card.booked-card .book-badge { display: block; }
+  .film-card.booked-card .film-time-col { background: rgba(74,124,111,0.1); border-right-color: rgba(74,124,111,0.25); }
+  .film-card:not(.booked-card) { opacity: 0.45; }
+  .film-card:not(.booked-card):hover { opacity: 1; }
 
   /* Stats section */
   .stats-section { padding: 1.25rem 1.5rem; }
@@ -698,11 +723,18 @@
   ⚠️ <strong>Configurazione richiesta:</strong> per attivare la sincronizzazione, apri questo file in un editor di testo e sostituisci <code>JSONBIN_API_KEY</code> e <code>JSONBIN_BIN_ID</code> con i tuoi valori da <strong>jsonbin.io</strong>. Le istruzioni complete sono nel README del repository.
 </div>
 
+<div class="next-film-bar hidden" id="nextFilmBar">
+  <div class="next-dot"></div>
+  <span class="next-label">Prossimo</span>
+  <span class="next-title" id="nextFilmTitle">—</span>
+  <span class="next-time" id="nextFilmTime">—</span>
+</div>
+
 <main id="main"></main>
 
 <div class="export-bar">
   <button class="btn-export" onclick="exportText()">Esporta testo</button>
-  <button class="btn-export" onclick="exportCSV()" style="background:var(--paper2);color:var(--ink);">Esporta CSV</button>
+  <button class="btn-export" onclick="exportCSV()" style="background:var(--paper2);color:var(--ink);">CSV</button>
   <button class="btn-export secondary" onclick="refreshData()">↻</button>
 </div>
 
@@ -1129,7 +1161,7 @@ function renderAll() {
     const filmsHtml = day.films.map((f, fi) => {
       const key = filmKey(di, fi);
       const myRating = currentUser && allVotes[key] ? (allVotes[key][currentUser] || 0) : 0;
-      const otherVotes = allVotes[key] ? Object.entries(allVotes[key]).filter(([k,v]) => v !== '__unseen__' && !k.startsWith('__note__') && !k.startsWith('__notepub__')) : [];
+      const otherVotes = allVotes[key] ? Object.entries(allVotes[key]).filter(([k,v]) => typeof v === 'number') : [];
       const starsHtml = [1,2,3,4,5].map(s =>
         `<span class="star ${myRating>=s?'on':''}" data-rate="${s}" data-day="${di}" data-film="${fi}">★</span>`
       ).join('');
@@ -1157,10 +1189,10 @@ function renderAll() {
         </div>
         <textarea class="note-area" data-notekey="${noteKey}" data-noteprivkey="${notePrivacyKey}" data-nday="${di}" data-nfilm="${fi}" data-ispublic="${isNotePublic?'1':'0'}" placeholder="${isNotePublic?'Nota pubblica — sincronizzata su tutti i dispositivi.':'Nota privata — salvata solo su questo dispositivo.'}" rows="2">${noteVal}</textarea>
         <button class="note-save-btn" data-nday="${di}" data-nfilm="${fi}">salva nota</button>` : '';
-      const isUnseen = currentUser && allVotes[key] ? (allVotes[key][currentUser] === '__unseen__') : false;
+      const isBooked = currentUser ? (localStorage.getItem(`feff28_book_${currentUser}_${key}`) === '1') : false;
       const synKey = key;
       const synVisible = synOpen[synKey];
-      return `<div class="film-card${isUnseen?' unseen':''}">
+      return `<div class="film-card${isBooked?' booked-card':''}">
         <div class="film-main">
           <div class="film-time-col">
             <span class="film-time">${f.t}</span>
@@ -1173,6 +1205,7 @@ function renderAll() {
               const em = String(end.getMinutes()).padStart(2,'0');
               return `<span class="film-end">~${eh}:${em}</span>`;
             })()}
+            <span class="book-badge">✓ pren.</span>
           </div>
           <div class="film-body">
             <div class="film-title">${f.title}</div>
@@ -1181,7 +1214,7 @@ function renderAll() {
             <div class="film-actions">
               <div class="stars">${starsHtml}</div>
               ${f.syn ? `<button class="toggle-syn" data-syn="${synKey}">${synVisible?'nascondi ▲':'trama ▼'}</button>` : ''}
-              ${currentUser ? `<button class="btn-unseen${isUnseen?' unseen':''}" data-uday="${di}" data-ufilm="${fi}" aria-label="${isUnseen?'segna come visto':'segna come non visto'}">${isUnseen?'🙈':'👁'}</button>` : ''}
+              ${currentUser ? `<button class="btn-book${isBooked?' booked':''}" data-uday="${di}" data-ufilm="${fi}" title="${isBooked?'rimuovi prenotazione':'segna come prenotato'}">${isBooked?'🎟':'🎫'}</button>` : ''}
             </div>
             ${otherHtml}
             ${noteHtml}
@@ -1271,6 +1304,75 @@ function toggleSyn(key) {
   renderAll();
 }
 
+// ─── Prossimo film + countdown WEAS ──────────────────
+const OPENING = new Date(2026, 3, 24, 19, 30, 0); // Apr 24 19:30
+
+function formatCountdown(ms) {
+  if (ms <= 0) return null;
+  const totalMin = Math.floor(ms / 60000);
+  const days = Math.floor(totalMin / 1440);
+  const hrs  = Math.floor((totalMin % 1440) / 60);
+  const mins = totalMin % 60;
+  if (days > 0) return `${days}g ${hrs}h ${String(mins).padStart(2,'0')}m`;
+  if (hrs > 0)  return `${hrs}h ${String(mins).padStart(2,'0')}m`;
+  return `${mins} min`;
+}
+
+function updateNextFilm() {
+  const bar = document.getElementById('nextFilmBar');
+  const titleEl = document.getElementById('nextFilmTitle');
+  const timeEl = document.getElementById('nextFilmTime');
+  if (!bar) return;
+  const now = new Date();
+  const festStart = new Date(2026, 3, 24);
+  const festEnd   = new Date(2026, 4, 3);
+
+  // Before festival: show countdown to opening
+  if (now < festStart) {
+    const diff = OPENING - now;
+    const cd = formatCountdown(diff);
+    bar.classList.remove('hidden');
+    titleEl.textContent = 'We Are All Strangers';
+    timeEl.textContent = cd ? `apertura tra ${cd}` : 'stanotte!';
+    return;
+  }
+
+  // During festival: prefer next booked film, fallback to next in programme
+  if (now < festEnd) {
+    const dayIdx = Math.floor((now - festStart) / 86400000);
+    if (dayIdx < 0 || dayIdx >= films.length) { bar.classList.add('hidden'); return; }
+
+    let booked = null, any = null;
+    for (const f of films[dayIdx].films) {
+      const [h,m] = f.t.split(':').map(Number);
+      const filmTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m);
+      if (filmTime <= now) continue;
+      const diff = Math.round((filmTime - now) / 60000);
+      const diffStr = diff < 60 ? `tra ${diff} min` : `tra ${Math.floor(diff/60)}h${String(diff%60).padStart(2,'0')}`;
+      const candidate = { title: f.title, start: f.t, diff: diffStr };
+      if (!any) any = candidate;
+      if (!booked && currentUser) {
+        const key = filmKey(dayIdx, films[dayIdx].films.indexOf(f));
+        const bkey = `feff28_book_${currentUser}_${key}`;
+        if (localStorage.getItem(bkey) === '1') booked = candidate;
+      }
+    }
+    const found = booked || any;
+    const isBooked = !!booked && found === booked;
+    if (found) {
+      bar.classList.remove('hidden');
+      titleEl.textContent = (isBooked ? '🎟 ' : '') + found.title;
+      timeEl.textContent = `${found.start} · ${found.diff}`;
+    } else {
+      bar.classList.add('hidden');
+    }
+    return;
+  }
+
+  // After festival
+  bar.classList.add('hidden');
+}
+
 // ─── Notes ───────────────────────────────────────────
 document.addEventListener('click', function(e) {
   const btn = e.target.closest('.note-save-btn');
@@ -1340,27 +1442,20 @@ document.addEventListener('click', function(e) {
   renderAll();
 });
 
-// ─── Unseen toggle ────────────────────────────────────
+// ─── Booked toggle (local only) ──────────────────────
 document.addEventListener('click', function(e) {
-  const btn = e.target.closest('.btn-unseen');
+  const btn = e.target.closest('.btn-book');
   if (!btn) return;
   e.stopPropagation();
   if (!currentUser) { showToast('Inserisci prima il tuo nome ↑'); return; }
-  const di = btn.dataset.uday;
-  const fi = btn.dataset.ufilm;
+  const di = btn.dataset.uday, fi = btn.dataset.ufilm;
   if (di === undefined || fi === undefined) return;
   const key = filmKey(+di, +fi);
-  if (!allVotes[key]) allVotes[key] = {};
-  const isNow = allVotes[key][currentUser] === '__unseen__';
-  if (isNow) {
-    delete allVotes[key][currentUser];
-    if (Object.keys(allVotes[key]).length === 0) delete allVotes[key];
-  } else {
-    allVotes[key][currentUser] = '__unseen__';
-  }
-  localStorage.setItem('feff28_votes_cache', JSON.stringify(allVotes));
+  const bkey = `feff28_book_${currentUser}_${key}`;
+  const isNow = localStorage.getItem(bkey) === '1';
+  if (isNow) localStorage.removeItem(bkey);
+  else localStorage.setItem(bkey, '1');
   renderAll();
-  saveVotes();
 });
 
 // ─── Stats ────────────────────────────────────────────
@@ -1373,8 +1468,7 @@ function getPersonStats(name) {
     day.films.forEach((f, fi) => {
       const key = filmKey(di, fi);
       const val = allVotes[key] ? allVotes[key][name] : undefined;
-      if (val === '__unseen__') { unseen++; return; }
-      if (typeof val === 'string') return;
+      if (typeof val !== 'number') return;
       const r = val || 0;
       if (r > 0) {
         voted++; ratingSum += r;
@@ -1387,7 +1481,7 @@ function getPersonStats(name) {
   });
   const avg = voted > 0 ? ratingSum / voted : null;
   const pct = Math.round((voted / totalFilms) * 100);
-  return { name, voted, totalFilms, avg, pct, byDay, bestTitles, bestR, unseen };
+  return { name, voted, totalFilms, avg, pct, byDay, bestTitles, bestR };
 }
 
 function renderStats(container) {
@@ -1522,6 +1616,7 @@ function exportCSV() {
   showToast('CSV scaricato ✓');
 }
 
+
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -1535,6 +1630,8 @@ if (currentUser) showUserBadge();
 buildNav();
 renderAll();
 loadVotes();
+updateNextFilm();
+setInterval(updateNextFilm, 60000);
 </script>
 </body>
 </html>
