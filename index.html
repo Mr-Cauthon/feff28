@@ -1528,8 +1528,6 @@ function toggleSyn(key) {
 }
 
 // ─── Prossimo film + countdown WEAS ──────────────────
-const OPENING = new Date(2026, 3, 24, 19, 30, 0); // Apr 24 19:30
-
 function formatCountdown(ms) {
   if (ms <= 0) return null;
   const totalMin = Math.floor(ms / 60000);
@@ -1550,49 +1548,56 @@ function updateNextFilm() {
   const festStart = new Date(2026, 3, 24);
   const festEnd   = new Date(2026, 4, 3);
 
-  // Before festival: show countdown to opening
-  if (now < festStart) {
-    const diff = OPENING - now;
-    const cd = formatCountdown(diff);
-    bar.classList.remove('hidden');
-    titleEl.textContent = 'We Are All Strangers';
-    timeEl.textContent = cd ? `apertura tra ${cd}` : 'stanotte!';
-    return;
-  }
+  // After festival: hide
+  if (now >= festEnd) { bar.classList.add('hidden'); return; }
 
-  // During festival: prefer next booked film, fallback to next in programme
-  if (now < festEnd) {
-    const dayIdx = Math.floor((now - festStart) / 86400000);
-    if (dayIdx < 0 || dayIdx >= films.length) { bar.classList.add('hidden'); return; }
+  // Scan ALL festival days looking for next upcoming film (booked preferred)
+  let booked = null, any = null;
 
-    let booked = null, any = null;
-    for (const f of films[dayIdx].films) {
+  for (let di = 0; di < films.length; di++) {
+    const festDate = new Date(2026, 3, 24 + di); // Apr 24 + di days
+    for (let fi = 0; fi < films[di].films.length; fi++) {
+      const f = films[di].films[fi];
       const [h,m] = f.t.split(':').map(Number);
-      const filmTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m);
-      if (filmTime <= now) continue;
-      const diff = Math.round((filmTime - now) / 60000);
-      const diffStr = diff < 60 ? `tra ${diff} min` : `tra ${Math.floor(diff/60)}h${String(diff%60).padStart(2,'0')}`;
-      const candidate = { title: f.title, start: f.t, diff: diffStr };
+      const filmTime = new Date(festDate.getFullYear(), festDate.getMonth(), festDate.getDate(), h, m);
+      if (filmTime <= now) continue; // already started or passed
+
+      const diffMs = filmTime - now;
+      const diffMin = Math.round(diffMs / 60000);
+      const diffStr = diffMin < 60
+        ? `tra ${diffMin} min`
+        : diffMin < 1440
+          ? `tra ${Math.floor(diffMin/60)}h${String(diffMin%60).padStart(2,'0')}`
+          : formatCountdown(diffMs);
+
+      const dayLabel = films[di].label;
+      const candidate = { title: f.title, start: f.t, day: dayLabel, diff: diffStr, sameDay: di === Math.floor((now - festStart) / 86400000) };
+
       if (!any) any = candidate;
+
       if (!booked && currentUser) {
-        const key = filmKey(dayIdx, films[dayIdx].films.indexOf(f));
+        const key = filmKey(di, fi);
         if (allVotes[key] && allVotes[key][`__book__${currentUser}`] === true) booked = candidate;
       }
+
+      // Once we have both candidates stop scanning this day
+      if (any && (booked || !currentUser)) break;
     }
-    const found = booked || any;
-    const isBooked = !!booked && found === booked;
-    if (found) {
-      bar.classList.remove('hidden');
-      titleEl.textContent = (isBooked ? '🎟 ' : '') + found.title;
-      timeEl.textContent = `${found.start} · ${found.diff}`;
-    } else {
-      bar.classList.add('hidden');
-    }
-    return;
+    // If we found what we need stop scanning days
+    if (any && (booked || !currentUser)) break;
   }
 
-  // After festival
-  bar.classList.add('hidden');
+  const found = booked || any;
+  const isBooked = !!booked && found === booked;
+
+  if (found) {
+    bar.classList.remove('hidden');
+    titleEl.textContent = (isBooked ? '🎟 ' : '') + found.title;
+    const dayPrefix = found.sameDay ? '' : `${found.day} · `;
+    timeEl.textContent = `${dayPrefix}${found.start} · ${found.diff}`;
+  } else {
+    bar.classList.add('hidden');
+  }
 }
 
 // ─── Notes ───────────────────────────────────────────
