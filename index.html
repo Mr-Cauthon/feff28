@@ -1593,8 +1593,7 @@ function updateNextFilm() {
   if (found) {
     bar.classList.remove('hidden');
     titleEl.textContent = (isBooked ? '🎟 ' : '') + found.title;
-    const dayPrefix = found.sameDay ? '' : `${found.day} · `;
-    timeEl.textContent = `${dayPrefix}${found.start} · ${found.diff}`;
+    timeEl.textContent = found.diff;
   } else {
     bar.classList.add('hidden');
   }
