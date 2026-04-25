@@ -1,0 +1,1930 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FEFF 28 · Diario di visione</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1208;
+    --paper: #f5f0e8;
+    --paper2: #ede8dc;
+    --gold: #c8923a;
+    --gold-light: #e8c98a;
+    --red: #9b2335;
+    --muted: #7a6e60;
+    --border: rgba(26,18,8,0.12);
+    --card-bg: #ffffff;
+    --header-bg: #1a1208;
+    --nav-bg: #1a1208;
+    --export-bg: #1a1208;
+    --header-text: rgba(245,240,232,0.9);
+    --header-muted: rgba(245,240,232,0.4);
+  }
+  :root.dark {
+    --ink: #f0ece4;
+    --paper: #1a1612;
+    --paper2: #242018;
+    --gold: #d4a054;
+    --gold-light: #e8c98a;
+    --red: #c0392b;
+    --muted: #8a7e72;
+    --border: rgba(240,236,228,0.1);
+    --card-bg: #211e1a;
+    --header-bg: #0f0d0a;
+    --nav-bg: #0f0d0a;
+    --export-bg: #0f0d0a;
+    --header-text: rgba(245,240,232,0.9);
+    --header-muted: rgba(245,240,232,0.4);
+  }
+
+  /* Dark mode ticket overrides */
+  :root.dark .film-card.booked-card { background: #2a1a18; outline-color: #c0392b; }
+  :root.dark .film-card.booked-card .film-body { background: #2a1a18; }
+  :root.dark .film-card.booked-card .film-title { color: #f0ece4; }
+  :root.dark .film-card.booked-card .film-time-col::before,
+  :root.dark .film-card.booked-card .film-time-col::after { background: var(--paper); }
+  :root.dark .film-card.booked-card.past-card { background: #1e1210; outline-color: #8b2a20; }
+  :root.dark .film-card.booked-card.past-card .film-body { background: #1e1210; }
+  :root.dark .film-card.booked-card.past-card .film-time-col::before,
+  :root.dark .film-card.booked-card.past-card .film-time-col::after { background: var(--paper); border-color: #8b2a20; }
+  :root.dark .film-card:not(.booked-card) { background: var(--card-bg); }
+  :root.dark .note-area { background: var(--paper2); color: var(--ink); border-color: rgba(240,236,228,0.15); }
+  :root.dark .film-synopsis-preview { border-top-color: rgba(240,236,228,0.1); }
+  :root.dark .vote-chip { background: var(--paper2); }
+  :root.dark .film-time-col { background: var(--paper2); border-right-color: rgba(240,236,228,0.08); }
+  :root.dark .rank-row { border-bottom-color: rgba(240,236,228,0.08); background: transparent; }
+  :root.dark .rank-row.gold { background: rgba(200,146,58,0.08); }
+  :root.dark .rank-row.silver { background: rgba(170,170,170,0.05); }
+  :root.dark .rank-row.bronze { background: rgba(176,112,64,0.05); }
+  :root.dark .stat-card { background: var(--paper2); }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    transition: background 0.3s, color 0.3s;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--header-bg);
+    color: #f0ece4;
+    padding: 2rem 1.5rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-top {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.4rem, 5vw, 2rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  header h1 span {
+    color: var(--gold-light);
+    font-style: italic;
+  }
+
+  .festival-dates {
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.5);
+    font-weight: 400;
+    white-space: nowrap;
+  }
+
+  /* Login bar */
+  .login-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .login-bar input {
+    background: rgba(245,240,232,0.1);
+    border: 1px solid rgba(245,240,232,0.25);
+    border-radius: 6px;
+    color: var(--header-text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    outline: none;
+    width: 160px;
+    transition: border-color 0.2s;
+  }
+  .login-bar input::placeholder { color: rgba(245,240,232,0.35); }
+  .login-bar input:focus { border-color: var(--gold-light); }
+
+  .btn-confirm {
+    background: var(--gold);
+    border: none;
+    border-radius: 6px;
+    color: var(--ink);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    padding: 6px 14px;
+    text-transform: uppercase;
+    transition: background 0.2s;
+  }
+  .btn-confirm:hover { background: var(--gold-light); }
+
+  .user-badge {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--gold-light);
+  }
+  .user-badge.visible { display: flex; }
+  .user-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 500;
+  }
+  .btn-change {
+    background: none; border: none;
+    color: rgba(245,240,232,0.4);
+    font-size: 0.7rem;
+    cursor: pointer;
+    text-decoration: underline;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* Sync status */
+  .sync-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #666;
+    display: inline-block;
+    margin-right: 4px;
+    transition: background 0.4s;
+  }
+  .sync-dot.ok { background: #4caf50; }
+  .sync-dot.err { background: var(--red); }
+  .sync-dot.loading { background: var(--gold); animation: pulse 0.8s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .sync-label { font-size: 0.65rem; color: rgba(245,240,232,0.4); letter-spacing: 0.05em; }
+
+  /* Config panel */
+  .config-panel {
+    background: rgba(200,146,58,0.08);
+    border: 1px solid rgba(200,146,58,0.25);
+    border-radius: 10px;
+    margin: 1rem 1.5rem;
+    padding: 1rem 1.25rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    display: none;
+  }
+  .config-panel.visible { display: block; }
+  .config-panel strong { color: var(--gold); }
+  .config-panel input {
+    display: block;
+    width: 100%;
+    margin-top: 0.5rem;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    background: white;
+    outline: none;
+  }
+  .config-panel input:focus { border-color: var(--gold); }
+
+  /* Day nav */
+  .day-nav {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    padding: 0 1.5rem;
+    background: var(--nav-bg);
+    scrollbar-width: none;
+    border-top: 1px solid rgba(240,236,228,0.08);
+  }
+  .day-nav::-webkit-scrollbar { display: none; }
+  .day-tab {
+    flex-shrink: 0;
+    padding: 10px 14px;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.4);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .day-tab:hover { color: var(--gold-light); }
+  .tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #c0392b;
+    color: #fff;
+    font-size: 0.5rem;
+    font-weight: 700;
+    min-width: 14px;
+    height: 14px;
+    border-radius: 7px;
+    padding: 0 4px;
+    margin-left: 5px;
+    vertical-align: middle;
+    letter-spacing: 0;
+  }
+  .day-tab.active { color: var(--gold-light); border-bottom-color: var(--gold); }
+  .day-tab.tab-rank {
+    color: var(--gold-light);
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    border-left: 1px solid rgba(245,240,232,0.12);
+    margin-left: 6px;
+    padding-left: 18px;
+    background: rgba(200,146,58,0.12);
+    border-radius: 4px 4px 0 0;
+    position: relative;
+  }
+
+  .day-tab.tab-rank:hover { color: #fff; background: rgba(200,146,58,0.25); }
+  .day-tab.tab-rank.active { color: #fff; background: var(--gold); border-bottom-color: var(--gold); }
+
+  /* Next film banner */
+  .next-film-bar {
+    background: rgba(255,255,255,0.04);
+    color: var(--paper);
+    padding: 6px 1.5rem;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-top: 1px solid rgba(245,240,232,0.08);
+    overflow: hidden;
+  }
+  .next-film-bar.hidden { display: none; }
+  .next-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); flex-shrink: 0; animation: pulse 1.5s infinite; }
+  .next-label { color: rgba(245,240,232,0.45); letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.6rem; white-space: nowrap; flex-shrink: 0; }
+  .next-title { color: var(--gold-light); font-weight: 500; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; max-width: 50%; }
+  .next-time { color: rgba(245,240,232,0.5); flex-shrink: 0; white-space: nowrap; font-size: 0.65rem; margin-left: auto; }
+
+  /* Content */
+  main { padding: 0 0 4rem; }
+
+  .day-section { display: none; padding: 1.25rem 1.5rem; }
+  .day-section.active { display: block; }
+
+  .day-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 400;
+    color: var(--ink);
+    margin-bottom: 0.25rem;
+  }
+  .day-subtitle {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+  }
+
+  /* Film card */
+  .film-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--card-bg);
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  .film-card.booked-card { overflow: visible; }
+  .film-card:hover { box-shadow: 0 2px 12px rgba(26,18,8,0.08); }
+
+  .film-main {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  .film-time-col {
+    background: var(--paper2);
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 56px;
+    border-right: 1px solid var(--border);
+  }
+  .film-end {
+    font-size: 0.55rem;
+    color: var(--muted);
+    margin-top: 3px;
+    letter-spacing: 0.02em;
+  }
+
+  .film-time {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .film-body {
+    flex: 1;
+    padding: 12px 14px;
+  }
+
+  .film-title {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+
+  .film-synopsis-preview {
+    font-size: 0.72rem;
+    color: var(--muted);
+    line-height: 1.5;
+    display: none;
+    margin-bottom: 8px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+  }
+  .film-synopsis-preview.open { display: block; }
+
+  .film-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  /* Stars */
+  .stars { display: flex; gap: 2px; }
+  .star {
+    font-size: 1.1rem;
+    cursor: pointer;
+    color: #d4c9b0;
+    transition: color 0.15s, transform 0.1s;
+    line-height: 1;
+    padding: 2px;
+    user-select: none;
+  }
+  .star:hover, .star.on { color: var(--gold); }
+  .star:active { transform: scale(0.85); }
+
+  /* Avatars row */
+  .votes-row {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .vote-chip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.65rem;
+    background: var(--paper2);
+    border-radius: 20px;
+    padding: 2px 7px 2px 3px;
+    color: var(--muted);
+  }
+  .vote-chip-avatar {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.55rem;
+    font-weight: 500;
+    color: white;
+  }
+  .vote-chip-name { color: var(--ink); font-weight: 500; }
+  .vote-chip-stars { color: var(--gold); letter-spacing: -1px; }
+
+  .feff-link {
+    display: block;
+    margin-top: 8px;
+    font-size: 0.65rem;
+    color: var(--gold);
+    text-decoration: none;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+  }
+  .feff-link:hover { text-decoration: underline; }
+
+  .toggle-syn {
+    background: none; border: none;
+    font-size: 0.65rem;
+    color: var(--muted);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-family: 'DM Sans', sans-serif;
+    padding: 0;
+    white-space: nowrap;
+  }
+
+  /* Competition badge */
+  .comp-badge {
+    display: inline-block;
+    font-size: 0.55rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+  .comp-badge.in { background: rgba(200,146,58,0.12); color: var(--gold); border: 1px solid rgba(200,146,58,0.3); }
+  .comp-badge.out { background: var(--paper2); color: var(--muted); border: 1px solid var(--border); }
+
+  /* Note save button */
+  .note-save-btn {
+    background: none; border: 1px solid var(--border);
+    border-radius: 4px; font-size: 0.6rem; color: var(--muted);
+    cursor: pointer; padding: 3px 10px; margin-top: 4px;
+    font-family: 'DM Sans', sans-serif; letter-spacing: 0.05em;
+    text-transform: uppercase; transition: all 0.2s;
+  }
+  .note-save-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .note-save-btn.saved { border-color: var(--gold); color: var(--gold); }
+
+  /* Note privacy toggle */
+  .note-header {
+    display: flex; align-items: center; gap: 6px; margin-top: 8px; margin-bottom: 4px;
+  }
+  .note-label { font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .note-privacy-btn {
+    background: none; border: 1px solid var(--border); border-radius: 4px;
+    font-size: 0.6rem; color: var(--muted); cursor: pointer; padding: 1px 6px;
+    font-family: 'DM Sans', sans-serif; letter-spacing: 0.05em; text-transform: uppercase;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .note-privacy-btn.public { border-color: var(--gold); color: var(--gold); background: rgba(200,146,58,0.06); }
+
+  /* Booked toggle */
+  .btn-book {
+    background: none; border: none;
+    cursor: pointer; padding: 3px 6px;
+    font-size: 1.2rem; line-height: 1;
+    color: rgba(26,18,8,0.18);
+    transition: color 0.2s, background 0.2s;
+    margin-left: auto;
+    flex-shrink: 0;
+    min-width: 32px;
+    min-height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 6px;
+    border: 1px solid transparent;
+  }
+  .btn-book:hover { color: var(--muted); background: var(--paper2); border-color: var(--border); }
+  .btn-book.booked { color: #4a7c6f; }
+  @media (max-width: 480px) {
+    .btn-book { font-size: 1.1rem; min-width: 28px; min-height: 28px; }
+  }
+  .film-card .book-badge {
+    display: none;
+    font-size: 0.55rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: #4a7c6f; font-weight: 500; margin-top: 3px;
+  }
+  /* Non-booked: faded */
+  .film-card:not(.booked-card) { opacity: 0.55; }
+  .film-card:not(.booked-card):hover { opacity: 1; transition: opacity 0.2s; }
+
+  /* Past booked: only time column darkens */
+  .film-card.booked-card.past-card .film-time-col { background: #8b2a20; }
+  .film-card.booked-card.past-card .film-time { color: rgba(255,255,255,0.7); }
+  .film-card.booked-card.past-card .film-end { color: rgba(255,255,255,0.45); }
+  .film-card.booked-card.past-card .book-badge { opacity: 0.5; }
+  .film-card.booked-card.past-card .serial-num { color: rgba(255,255,255,0.25); }
+  .film-card.booked-card.past-card { opacity: 0.75; }
+
+  /* Booked: ticket style */
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap');
+
+  .film-card.booked-card {
+    background: var(--card-bg);
+    border: none;
+    position: relative;
+    border-radius: 0;
+    margin-bottom: 18px;
+    /* Dentellature top e bottom come biglietto classico */
+    -webkit-mask-image:
+      radial-gradient(circle at 50% 0%,   transparent 5px, black 6px),
+      radial-gradient(circle at 50% 100%, transparent 5px, black 6px);
+    -webkit-mask-size: 12px 100%;
+    -webkit-mask-repeat: repeat-x;
+    -webkit-mask-position: 0 0, 0 100%;
+    mask-image:
+      radial-gradient(circle at 50% 0%,   transparent 5px, black 6px),
+      radial-gradient(circle at 50% 100%, transparent 5px, black 6px);
+    mask-size: 12px 100%;
+    mask-repeat: repeat-x;
+    mask-position: 0 0, 0 100%;
+    border: 2px solid #c0392b;
+    border-left: none;
+    border-right: none;
+  }
+
+  .film-card.booked-card .book-badge { display: block; }
+  .film-card.booked-card .film-time-col {
+    background: #c0392b;
+    border-right: none;
+    border-radius: 0;
+    position: relative;
+    overflow: visible;
+  }
+  .film-card.booked-card .film-time { color: #fff; font-weight: 700; }
+  .film-card.booked-card .film-end  { color: rgba(255,255,255,0.75); }
+  .film-card.booked-card .book-badge {
+    color: rgba(255,255,255,0.9);
+    font-size: 0.42rem;
+    letter-spacing: 0.16em;
+  }
+
+  /* Perforazione separatore stub */
+  .film-card.booked-card .film-main { position: relative; }
+  .film-card.booked-card .film-main::after {
+    content: '';
+    position: absolute;
+    left: 62px; top: 0; bottom: 0; width: 0;
+    border-left: 2px dashed rgba(192,57,43,0.35);
+    z-index: 1;
+  }
+  /* Semicerchi notch */
+  .film-card.booked-card .film-time-col::before,
+  .film-card.booked-card .film-time-col::after {
+    content: '';
+    position: absolute;
+    right: -8px;
+    width: 16px; height: 16px;
+    background: var(--paper);
+    border-radius: 50%;
+    border: 2px solid #c0392b;
+    z-index: 3;
+  }
+  .film-card.booked-card .film-time-col::before { top: -8px; }
+  .film-card.booked-card .film-time-col::after  { bottom: -8px; }
+
+  /* Numero seriale verticale — nella colonnina orario */
+  .serial-num {
+    display: none;
+    font-size: 0.35rem;
+    letter-spacing: 0.15em;
+    color: rgba(255,255,255,0.45);
+    font-family: 'Special Elite', 'DM Sans', sans-serif;
+    white-space: nowrap;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    margin-top: 6px;
+    pointer-events: none;
+    overflow: hidden;
+    max-height: 60px;
+  }
+  .film-card.booked-card .serial-num { display: block; }
+
+  /* Timbro inline accanto a salva nota */
+  .ticket-stamp {
+    display: none;
+    width: 52px; height: 52px;
+    flex-shrink: 0;
+    transform: rotate(-14deg);
+    pointer-events: none;
+    margin-left: auto;
+  }
+  .film-card.booked-card .ticket-stamp { display: inline-block; }
+  .ticket-stamp svg { width: 100%; height: 100%; overflow: visible; }
+  .note-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Stats section */
+  .stats-section { padding: 1.25rem 1.5rem; }
+  .stats-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 400; color: var(--ink); margin-bottom: 0.25rem; }
+  .stats-subtitle { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1.25rem; }
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.25rem; }
+  .stat-card { background: var(--paper2); border-radius: var(--border-radius-md); padding: 0.875rem 1rem; }
+  .stat-label { font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .stat-value { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: var(--ink); line-height: 1; }
+  .stat-sub { font-size: 0.62rem; color: var(--muted); margin-top: 3px; }
+  .stats-day-table { width: 100%; border-collapse: collapse; }
+  .stats-day-table th { font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); text-align: left; padding: 4px 0; border-bottom: 1px solid var(--border); font-weight: 400; }
+  .stats-day-table td { font-size: 0.75rem; color: var(--ink); padding: 6px 0; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .stats-day-table td:last-child { text-align: right; }
+  .stats-bar-wrap { width: 60px; background: var(--paper2); border-radius: 3px; height: 4px; overflow: hidden; display: inline-block; vertical-align: middle; margin-right: 6px; }
+  .stats-bar { height: 4px; background: var(--gold); border-radius: 3px; }
+  .stats-empty { font-size: 0.85rem; color: var(--muted); font-style: italic; text-align: center; padding: 2rem 0; }
+  @media (max-width: 480px) {
+    .stats-section { padding: 1rem 0.875rem; }
+    .stats-bar-wrap { width: 40px; }
+  }
+
+  /* Personal note */
+  .note-area {
+    width: 100%;
+    margin-top: 8px;
+    padding: 7px 10px;
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    background: var(--paper2);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    color: var(--ink);
+    resize: none;
+    outline: none;
+    min-height: 52px;
+    transition: border-color 0.2s;
+    line-height: 1.5;
+  }
+  .note-area:focus { border-color: var(--gold); border-style: solid; }
+  .note-area::placeholder { color: var(--muted); font-style: italic; }
+  .note-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 8px;
+    display: block;
+  }
+
+  /* Export */
+  .export-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--export-bg);
+    padding: 12px 1.5rem;
+    display: flex;
+    gap: 10px;
+    z-index: 99;
+  }
+  .btn-export {
+    flex: 1;
+    background: var(--gold);
+    border: none;
+    border-radius: 8px;
+    color: var(--ink);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    padding: 11px;
+    text-transform: uppercase;
+    transition: background 0.2s;
+  }
+  .btn-export:hover { background: var(--gold-light); }
+  .btn-export.secondary {
+    background: rgba(245,240,232,0.08);
+    color: var(--paper);
+    flex: 0 0 auto;
+    padding: 11px 16px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s;
+    z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+
+  /* ─── Mobile optimizations ─────────────────────── */
+  @media (max-width: 480px) {
+    header {
+      padding: 1rem 1rem 0.75rem;
+    }
+    .header-top {
+      margin-bottom: 0.75rem;
+      gap: 0.5rem;
+    }
+    header h1 {
+      font-size: 1.25rem;
+    }
+    .festival-dates {
+      font-size: 0.6rem;
+    }
+    .login-bar select {
+      font-size: 16px;
+      width: 160px;
+      padding: 8px 12px;
+    }
+    .btn-confirm {
+      padding: 8px 14px;
+      font-size: 0.75rem;
+    }
+    .day-tab {
+      padding: 14px 12px; /* min 44px touch target */
+      font-size: 0.65rem;
+    }
+    .day-section {
+      padding: 1rem 0.875rem;
+    }
+    .film-time-col {
+      min-width: 52px;
+      padding: 12px 8px;
+    }
+    .film-time {
+      font-size: 0.9rem;
+    }
+    .film-body {
+      padding: 10px 10px;
+    }
+    .film-title {
+      font-size: 0.8rem;
+    }
+    .star {
+      font-size: 1.4rem;   /* bigger tap target */
+      padding: 4px 3px;
+    }
+    .toggle-syn {
+      font-size: 0.7rem;
+      padding: 4px 0;
+    }
+    .film-synopsis-preview {
+      font-size: 0.75rem;
+    }
+    .export-bar {
+      padding: 10px 1rem;
+      padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    }
+    .btn-export {
+      font-size: 0.72rem;
+      padding: 13px 10px;
+    }
+    main {
+      padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+    }
+    .vote-chip {
+      font-size: 0.68rem;
+      padding: 3px 8px 3px 4px;
+    }
+    .vote-chip-avatar {
+      width: 18px; height: 18px;
+      font-size: 0.6rem;
+    }
+  }
+
+  /* Ranking */
+  .rank-section { padding: 1rem 1.5rem 1rem; }
+  .rank-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 400; color: var(--ink); margin-bottom: 0.25rem; }
+  .rank-subtitle { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1.25rem; }
+  .rank-empty { font-size: 0.85rem; color: var(--muted); font-style: italic; padding: 2rem 0; text-align: center; }
+  .rank-row {
+    display: flex; align-items: center; gap: 12px;
+    background: white; border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 14px; margin-bottom: 8px;
+  }
+  .rank-row.gold   { border-color: var(--gold); background: rgba(200,146,58,0.06); }
+  .rank-row.silver { border-color: #aaa; background: rgba(170,170,170,0.06); }
+  .rank-row.bronze { border-color: #b07040; background: rgba(176,112,64,0.06); }
+  .rank-pos { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; min-width: 28px; text-align: center; color: var(--muted); }
+  .rank-row.gold   .rank-pos { color: var(--gold); }
+  .rank-row.silver .rank-pos { color: #999; }
+  .rank-row.bronze .rank-pos { color: #b07040; }
+  .rank-info { flex: 1; min-width: 0; }
+  .rank-film { font-size: 0.82rem; font-weight: 500; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rank-day  { font-size: 0.65rem; color: var(--muted); margin-top: 2px; }
+  .rank-score { text-align: right; }
+  .rank-avg  { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; color: var(--ink); line-height: 1; }
+  .rank-count { font-size: 0.62rem; color: var(--muted); margin-top: 2px; }
+  .rank-bar-wrap { width: 60px; background: var(--paper2); border-radius: 4px; height: 5px; overflow: hidden; }
+  .rank-bar { height: 5px; background: var(--gold); border-radius: 4px; transition: width 0.4s; }
+  @media (max-width: 480px) {
+    .rank-section { padding: 1rem 0.875rem; }
+    .rank-bar-wrap { width: 40px; }
+  }
+
+  /* Config notice */
+  .notice {
+    margin: 1.5rem;
+    padding: 1rem 1.25rem;
+    background: rgba(155,35,53,0.06);
+    border: 1px solid rgba(155,35,53,0.2);
+    border-radius: 10px;
+    font-size: 0.8rem;
+    color: var(--red);
+    line-height: 1.6;
+    display: none;
+  }
+  .notice.visible { display: block; }
+  .notice code {
+    background: rgba(155,35,53,0.1);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.75rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <h1>FEFF <span>28</span><br>Diario di visione</h1>
+    <div style="text-align:right">
+      <div class="festival-dates">Udine · 24 apr–2 mag 2026</div>
+      <div style="margin-top:6px;display:flex;align-items:center;gap:8px;justify-content:flex-end;">
+        <span class="sync-dot" id="syncDot"></span>
+        <span class="sync-label" id="syncLabel">—</span>
+        <button id="darkToggle" onclick="toggleDark()" style="background:none;border:none;cursor:pointer;font-size:0.75rem;color:rgba(245,240,232,0.4);padding:0;line-height:1;" title="tema scuro/chiaro">☀</button>
+      </div>
+    </div>
+  </div>
+  <div class="login-bar" id="loginBar">
+    <select id="nameInput" style="background:rgba(245,240,232,0.1);border:1px solid rgba(245,240,232,0.25);border-radius:6px;color:#f5f0e8;font-family:'DM Sans',sans-serif;font-size:16px;padding:7px 12px;outline:none;width:180px;appearance:none;-webkit-appearance:none;cursor:pointer;">
+      <option value="" disabled selected style="color:#999;background:#1a1208;">Chi sei?</option>
+      <option style="color:#1a1208;background:#f5f0e8;">Davide</option>
+      <option style="color:#1a1208;background:#f5f0e8;">Silvia</option>
+      <option style="color:#1a1208;background:#f5f0e8;">Francesco</option>
+      <option style="color:#1a1208;background:#f5f0e8;">Francesca</option>
+      <option style="color:#1a1208;background:#f5f0e8;">Federica</option>
+      <option style="color:#1a1208;background:#f5f0e8;">Lara</option>
+      <option style="color:#1a1208;background:#f5f0e8;">Bruno</option>
+    </select>
+    <button class="btn-confirm" onclick="setUser()">Entra</button>
+  </div>
+  <div class="user-badge" id="userBadge">
+    <div class="user-avatar" id="userAvatar"></div>
+    <span id="userNameLabel"></span>
+    <button class="btn-change" onclick="changeUser()">cambia</button>
+  </div>
+  <nav class="day-nav" id="dayNav"></nav>
+  <div class="next-film-bar hidden" id="nextFilmBar">
+    <div class="next-dot"></div>
+    <span class="next-label">Prossimo</span>
+    <span class="next-title" id="nextFilmTitle">—</span>
+    <span class="next-time" id="nextFilmTime">—</span>
+  </div>
+</header>
+
+<div class="notice" id="configNotice">
+  ⚠️ <strong>Configurazione richiesta:</strong> per attivare la sincronizzazione, apri questo file in un editor di testo e sostituisci <code>JSONBIN_API_KEY</code> e <code>JSONBIN_BIN_ID</code> con i tuoi valori da <strong>jsonbin.io</strong>. Le istruzioni complete sono nel README del repository.
+</div>
+
+
+<main id="main"></main>
+
+<div class="export-bar">
+  <button class="btn-export" onclick="exportText()">Esporta testo</button>
+  <button class="btn-export" onclick="exportCSV()" style="background:var(--paper2);color:var(--ink);">CSV</button>
+  <button class="btn-export secondary" onclick="refreshData()">↻</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// CONFIGURAZIONE — sostituisci questi valori
+// ═══════════════════════════════════════════════════
+const JSONBIN_API_KEY = '$2a$10$c3gla4n68LrMjjDaWty4XOrfayVrMdU5nW/MSmyfpWjQfrSwIkz/2';
+const JSONBIN_BIN_ID  = '69e5ed2e36566621a8d0d388';
+// ═══════════════════════════════════════════════════
+
+const BASE_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+const HEADERS = {
+  'Content-Type': 'application/json',
+  'X-Master-Key': JSONBIN_API_KEY,
+  'X-Bin-Versioning': 'false'
+};
+
+const AVATAR_COLORS = ['#c8923a','#9b2335','#4a7c6f','#5c4a8f','#2e6da4','#7a6e60'];
+function avatarColor(name) {
+  let h = 0; for(let c of name) h += c.charCodeAt(0);
+  return AVATAR_COLORS[h % AVATAR_COLORS.length];
+}
+function initials(name) {
+  return name.split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2);
+}
+
+const films = [
+  { day:"Ven 24 Apr", label:"Ven 24/4", films:[
+    {t:"14:00",title:"HULA GIRLS",syn:"Giappone 2006 (classico restaurato). In un villaggio minerario del Tohoku in crisi, giovani donne si allenano per diventare ballerine di hula per salvare la comunità trasformando la miniera in un parco termale. Dramma commovente ispirato a una storia vera, di Lee Sang-il."},
+    {t:"16:20",title:"UNDER THE OPEN SKY",syn:"Giappone 2020 (Nishikawa Miwa). Un ex yakuza scarcerato dopo quindici anni tenta di reinserirsi nella società. Fuori concorso, nella retrospettiva dedicata a Koji Yakusho."},
+    {t:"19:15",title:"WE ARE ALL STRANGERS",syn:"Singapore 2026 (Anthony Chen). Film d'apertura FEFF28. Due matrimoni mettono in crisi le vite parallele di un padre e un figlio, ridisegnando il fragile equilibrio tra loro mentre entrambi affrontano amore, perdita e responsabilità. Primo film singaporiano in competizione al Festival di Berlino."},
+    {t:"22:30",title:"KUNG FU",syn:"Taiwan 2026 (Giddens Ko). Una dichiarazione d'amore folle e spettacolare al cinema wuxia. Prima internazionale al festival."}
+  ]},
+  { day:"Sab 25 Apr", label:"Sab 25/4", films:[
+    {t:"09:00",title:"THE SNOWBALL ON A SUNNY DAY",syn:"Hong Kong 2026 (Philip Yung). Commedia scombinata in stile familiare, con toni brillanti e situazioni impreviste che si moltiplicano come una palla di neve."},
+    {t:"11:20",title:"AH GIRL",syn:"Singapore 2026 (Ang Geck Priscilla). I bambini osservano il mondo degli adulti con occhi impietosi. Dramma intimo su famiglia e infanzia nella Singapore contemporanea."},
+    {t:"14:00",title:"5 CENTIMETERS PER SECOND",syn:"Giappone 2025 (Okuyama Yoshiyuki). Attenzione: non è il film di Shinkai del 2007 — è un nuovo film omonimo. Un appuntamento attraverso il tempo, un dramma sulle distanze e i momenti mancati."},
+    {t:"16:15",title:"WE'RE NOTHING AT ALL",syn:"Hong Kong 2026 (Herman Yau). Una tragedia su un attentato esplosivo portata al punto di ebollizione. Dramma ad alta tensione con risvolti sociali."},
+    {t:"19:00",title:"PERFECT DAYS",syn:"Giappone/Germania 2023 (Wim Wenders). Hirayama, addetto alle pulizie dei bagni pubblici di Tokyo, conduce una vita di quieta routine e profonda attenzione ai piccoli piaceri. Fuori concorso, nella retrospettiva dedicata a Koji Yakusho, vincitore del premio come migliore attore a Cannes 2023."},
+    {t:"21:40",title:"GHOST IN THE CELL",syn:"Indonesia 2026 (Joko Anwar). Arte e fantasmi si incontrano in un carcere. Il regista di Impetigore esplora il soprannaturale in un contesto claustrofobico e opprimente."},
+    {t:"23:40",title:"THA RAE: THE EXORCIST",syn:"Thailandia 2025 (Taweewat Wantha). Un'alleanza di esorcisti affronta forze oscure in un villaggio rurale tailandese. Horror soprannaturale radicato nel folklore locale."}
+  ]},
+  { day:"Dom 26 Apr", label:"Dom 26/4", films:[
+    {t:"09:00",title:"LINKA LINKA",syn:"Cina 2025 (Kangdrun). Un ritorno a casa tibetano: viaggio tra tradizione, paesaggi e memoria in un film che esplora l'identità culturale della regione himalayana."},
+    {t:"11:00",title:"FUJIKO",syn:"Giappone 2026 (Kimura Taichi). Prima mondiale. Dramma onirico sull'emancipazione femminile, con Megumi (cantante e attrice) protagonista. Una storia di potere e identità al femminile."},
+    {t:"14:00",title:"I BLEW OUT THE CANDLES BEFORE MAKING A WISH",syn:"Taiwan 2026 (Chao Koi-wang, Hu Chin-yen). Prima mondiale. Una fuga a Macao diventa il pretesto per un thriller familiare ricco di colpi di scena, tra bugie e segreti da svelare."},
+    {t:"16:10",title:"KOKUHO",syn:"Giappone 2025 (Lee Sang-il). Due vite sul palcoscenico del teatro kabuki: un dramma raffinato sull'arte, l'identità e la tradizione. Fuori concorso, special screening."},
+    {t:"19:20",title:"A FOGGY TALE",syn:"Taiwan 2025 (Chen Yu-hsun). Un'amicizia in un'epoca di terrore: ambientato probabilmente nel periodo del Terrore Bianco taiwanese, un racconto storico sull'amicizia e la sopravvivenza."},
+    {t:"21:50",title:"HIJACKED",syn:"Vietnam 2025 (Ham Tran). Azione ad alta quota e ad alta tensione: un dirottamento aereo raccontato con ritmo frenetico. Thriller d'azione vietnamita."}
+  ]},
+  { day:"Lun 27 Apr", label:"Lun 27/4", films:[
+    {t:"08:30",title:"NIGHT KING",syn:"Hong Kong 2026 (Jack Ng). Un meraviglioso affresco sulla vita notturna vintage di Hong Kong. Dramma nostalgico sull'underground urbano e i suoi protagonisti."},
+    {t:"10:55",title:"SOMEONE LIKE ME",syn:"Hong Kong 2025 (Tam Wai-ching). Sessualità e disabilità al centro di un racconto delicato e coraggioso. Un film che sfida i pregiudizi con umanità e sensibilità."},
+    {t:"13:00",title:"FILIPIÑANA",syn:"Filippine 2026 (Rafael Manuel). Un balletto astratto: film sperimentale e visivamente audace sull'identità filippina, tra danza, corpo e politica."},
+    {t:"15:00",title:"THE WORLD OF LOVE",syn:"Corea del Sud 2025 (Yoon Ga-eun). Cicatrici segrete: un dramma sui traumi nascosti e le ferite invisibili che plasmano le relazioni e le vite delle persone."},
+    {t:"17:20",title:"THE SEOUL GUARDIANS",syn:"Corea del Sud 2026 (Kim Jong-woo, Kim Shin-wan, Cho Chul-young). Copertura in diretta di un colpo di stato: il primo documentario in competizione nella storia del FEFF, sulla dichiarazione della legge marziale del dicembre 2024."},
+    {t:"19:15",title:"KY NAM INN",syn:"Vietnam 2025 (Leon Le). Melodramma in stile vecchia Saigon: romantico e malinconico, ambientato negli ambienti d'epoca della città che fu, con tutta la sua poesia perduta."},
+    {t:"21:55",title:"ROAD TO VENDETTA",syn:"Hong Kong/Giappone 2025 (Njo Kui-ying). Un film d'azione tutto gas e stile: vendetta, onore e adrenalina pura nel genere action di Hong Kong ai suoi livelli migliori."}
+  ]},
+  { day:"Mar 28 Apr", label:"Mar 28/4", films:[
+    {t:"08:30",title:"THE LAST BLOSSOM",syn:"Giappone 2025 (Kinoshita Baku). Animazione con un fiore che parla: una storia poetica e toccante sulla vita, la morte e la bellezza effimera della natura."},
+    {t:"10:15",title:"TAKE OFF",syn:"Cina 2025 (Pengfei). Il sogno cinese di Icaro: un giovane insegue un'ambizione impossibile tra cielo e terra, in un film che mescola realismo e lirismo."},
+    {t:"12:30",title:"THE SICKNESS UNTO LOVE",syn:"Giappone 2025 (Hiroki Ryuichi). Esplorare i confini dell'amore: un dramma intenso e fisico sulla relazione tra desiderio, dolore e ossessione sentimentale."},
+    {t:"14:35",title:"DEEP QUIET ROOM",syn:"Taiwan 2026 (Shen Ko-shang). Trauma e verità nascoste: un film che scava nelle ferite psicologiche con rigore e precisione, in un dramma claustrofobico e potente."},
+    {t:"16:40",title:"JET LAG IN SUMMER",syn:"Cina 2025 (Yan Kunao). Una storia di crescita da espatriato: il disorientamento di chi vive tra due culture, raccontato con leggerezza e malinconia estiva."},
+    {t:"19:15",title:"MY NAME",syn:"Corea del Sud 2026 (Chung Ji-young). Un addio impossibile: la storia del massacro di Jeju, pagina tragica della storia coreana del dopoguerra, raccontata attraverso un'identità ritrovata."},
+    {t:"21:30",title:"SUZUKI = BAKUDAN",syn:"Giappone 2025 (Nagai Akira). Un film investigativo fuori dagli schemi: indagine, mistero e umorismo nero in un thriller tutto giapponese con un protagonista esplosivo."}
+  ]},
+  { day:"Mer 29 Apr", label:"Mer 29/4", films:[
+    {t:"09:00",title:"A MIGHTY ADVENTURE",syn:"Taiwan/Malaysia/Hong Kong 2026 (Toe Yuen). Animazione silenziosa sulle meraviglie della natura: un'avventura senza parole, pura immagine e poesia visiva, per tutte le età."},
+    {t:"10:30",title:"MIDNIGHT GIRLS",syn:"Filippine 2026 (Irene Villamor). Prima mondiale. Vivere e sopravvivere a Nagoya: giovani donne filippine in Giappone cercano il loro posto tra sogni e dure realtà quotidiane."},
+    {t:"14:00",title:"TIGER",syn:"Giappone 2025 (Anshul Chauhan). Dramma LGBTQ senza compromessi: una storia di identità, coraggio e resistenza in un Giappone che fatica ad accettare la diversità."},
+    {t:"16:20",title:"SUNSHINE WOMEN'S CHOIR",syn:"Taiwan 2025 (Gavin Lin). Musical lacrimevole ambientato in carcere: un coro di donne detenute trova riscatto, sorellanza e speranza attraverso la musica."},
+    {t:"19:15",title:"90 METERS",syn:"Giappone 2026 (Nakagawa Shun). Prendersi cura con amore: un dramma delicato su cura, dedizione e i limiti fisici ed emotivi di chi assiste chi ama."},
+    {t:"21:30",title:"THE SHADOW'S EDGE",syn:"Cina/Hong Kong 2025 (Larry Yang). Di chi sono quegli occhi? Thriller d'azione con un'identità in gioco: chi guarda, chi è guardato, chi controlla davvero la situazione."}
+  ]},
+  { day:"Gio 30 Apr", label:"Gio 30/4", films:[
+    {t:"09:00",title:"ANOTHER WORLD",syn:"Hong Kong 2025 (Tommy Ng). Fantasy animato surreale: un viaggio nell'assurdo e nell'onirico, dove i confini tra realtà e immaginazione si dissolvono in immagini inventive."},
+    {t:"11:05",title:"ONCE WE WERE US",syn:"Corea del Sud 2025 (Kim Do-young). La fine di un amore: un dramma sentimentale che esplora cosa rimane di una coppia quando tutto sembra finito, tra rimpianto e possibilità."},
+    {t:"14:30",title:"UNCHAINED",syn:"Giappone 2026 (Yoshida Keisuke). Prima mondiale. Una parabola sul male: fino a che punto può spingersi la crudeltà umana? Un film che scava nella natura oscura dell'uomo."},
+    {t:"16:35",title:"MEASURE IN LOVE",syn:"Hong Kong/Taiwan 2025 (Kung Siu-ping). Un'altra mattone nel muro: dramma sentimentale che misura l'amore in termini di sacrifici, attese e silenzi accumulati nel tempo."},
+    {t:"19:15",title:"NUMBER ONE",syn:"Corea del Sud 2026 (Kim Tae-yong). Un conto alla rovescia inatteso: thriller o dramma su chi si trova improvvisamente al vertice, con tutto il peso e il pericolo che ne deriva."},
+    {t:"21:20",title:"ALL GREENS",syn:"Giappone 2026 (Koyama Takashi). Vuoi una canna? Commedia irriverente e scanzonata sulla vita quotidiana, con un tono da buddy movie rilassato e umoristico."},
+    {t:"23:40",title:"UNIDENTIFIED MURDER",syn:"Hong Kong 2026 (Kwok Ka-hei, Jack Lee). UFO o non UFO? Un omicidio misterioso che potrebbe avere spiegazioni soprannaturali — o forse no. Thriller tra il grottesco e il poliziesco."}
+  ]},
+  { day:"Ven 1 Mag", label:"Ven 1/5", films:[
+    {t:"09:00",title:"THE FOX KING",syn:"Malaysia 2025 (Woo Ming Jin). I gemelli, la donna misteriosa e il mare: un racconto enigmatico e atmosferico che mescola folklore e suspense sulle coste della Malaysia."},
+    {t:"10:50",title:"TOKYO TAXI",syn:"Giappone 2025 (Yamada Yoji). Road movie nostalgico per le strade di Tokyo: il maestro Yamada racconta un viaggio tra passato e presente, con la malinconia dei luoghi e dei ricordi. Fuori concorso, special screening."},
+    {t:"12:50",title:"DOPAMINE",syn:"Indonesia 2025 (Teddy Soeria Atmadja). Thriller romantico criminale: amore, ossessione e crimine si intrecciano in un film che esplora la dipendenza emotiva e i suoi rischi fatali."},
+    {t:"14:40",title:"THE OLD MAN AND HIS CAR",syn:"Singapore 2025 (Michael Kam). Sui sentieri della memoria: un anziano e la sua auto in un viaggio malinconico tra ricordi, perdite e la bellezza silenziosa del tempo che passa."},
+    {t:"16:25",title:"THE KING'S WARDEN",syn:"Corea del Sud 2026 (Jang Hang-jun). Un re come ospite: blockbuster storico coreano già visto da oltre 15 milioni di spettatori, sull'onore e il potere nella Corea antica."},
+    {t:"19:00",title:"MOTHER BHUMI",syn:"Malaysia 2025 (Chong Keat Aun). Vita e magia al confine: l'ultimo film di Fan Bingbing (premiata con il Gelso d'Oro alla Carriera), vincitrice del Golden Horse come miglior attrice. Un dramma sulla terra, la sopravvivenza e la magia ai margini del mondo."},
+    {t:"21:25",title:"TUNNELS: SUN IN THE DARK",syn:"Vietnam 2025 (Bui Thac Chuyen). L'altro lato della guerra in Vietnam: una visione intima e spietata del conflitto visto dall'interno dei tunnel, lontana dalla retorica eroica."},
+    {t:"23:45",title:"THE LAST SHOT",syn:"Thailandia 2026 (Puttipong Nakthong). Neo-noir avvincente: un thriller tailandese di grande tensione, costruito con maestria stilistica e una narrazione che non lascia scampo."}
+  ]},
+  { day:"Sab 2 Mag", label:"Sab 2/5", films:[
+    {t:"09:00",title:"A WRITER'S ODYSSEY 2",syn:"Cina 2025 (Lu Yang). Sequel del fantasy d'azione del 2021: lo scrittore torna a vivere parallelamente la sua storia e quella del suo romanzo, in un intreccio di mondi magnifico e stravagante."},
+    {t:"11:25",title:"CIAO UFO",syn:"Hong Kong 2025 (Patrick Leung). Tre amici d'infanzia cresciuti nel popolare quartiere di Wah Fu Estate vengono segnati per sempre da un avvistamento UFO negli anni '80: da adulti scoprono che la vita non è andata come speravano. Dramma nostalgico vincitore dei Hong Kong Film Awards 2026 come Miglior Film. Fuori concorso, special screening."},
+    {t:"13:50",title:"GOHAN",syn:"Thailandia 2026 (Chayanop Boonprakob, Baz Poonpiriya, Atta Hemwadee). La vita di un cane in 3 episodi: tre registi tailandesi raccontano il mondo dal punto di vista di un cane, tra commedia e commozione."},
+    {t:"16:25",title:"UNEXPECTED FAMILY",syn:"Cina 2026 (Li Taiyan). Una commedia familiare in stile Jackie Chan: situazioni impreviste, dinamiche caotica e cuore grande per un film che celebra i legami inaspettati."},
+    {t:"19:00",title:"BLADES OF THE GUARDIANS: WIND RISES IN THE DESERT",syn:"Hong Kong/Cina 2026 (Yuen Woo-ping). Film di chiusura FEFF28. Action fantasy wuxia ambientato nel deserto: guardiani lama proteggono il mondo da forze oscure in scontri spettacolari."},
+    {t:"21:30",title:"BLOOD MOON RITE 8",syn:"Vietnam 2026 (Phan Gia Nhat Linh). One Cut of the Dead rivive: remake vietnamita del cult giapponese sullo zombie movie girato in un solo piano sequenza, reimmaginato con freschezza e ironia."}
+  ]}
+];
+
+const FILM_URLS = {
+    "HULA GIRLS": "https://www.fareastfilm.com/film/hula-girls-7148/",
+    "UNDER THE OPEN SKY": "https://www.fareastfilm.com/film/under-the-open-sky/",
+    "WE ARE ALL STRANGERS": "https://www.fareastfilm.com/film/we-are-all-strangers/",
+    "KUNG FU": "https://www.fareastfilm.com/film/kung-fu/",
+    "THE SNOWBALL ON A SUNNY DAY": "https://www.fareastfilm.com/film/the-snowball-on-a-sunny-day/",
+    "AH GIRL": "https://www.fareastfilm.com/film/ah-girl/",
+    "5 CENTIMETERS PER SECOND": "https://www.fareastfilm.com/film/5-centimeters-per-second/",
+    "WE'RE NOTHING AT ALL": "https://www.fareastfilm.com/film/we-re-nothing-at-all/",
+    "PERFECT DAYS": "https://www.fareastfilm.com/film/perfect-days/",
+    "GHOST IN THE CELL": "https://www.fareastfilm.com/film/ghost-in-the-cell/",
+    "THA RAE: THE EXORCIST": "https://www.fareastfilm.com/film/tha-rae-the-exorcist/",
+    "LINKA LINKA": "https://www.fareastfilm.com/film/linka-linka/",
+    "FUJIKO": "https://www.fareastfilm.com/film/fujiko/",
+    "I BLEW OUT THE CANDLES BEFORE MAKING A WISH": "https://www.fareastfilm.com/film/i-blew-out-the-candles-before-making-a-wish/",
+    "KOKUHO": "https://www.fareastfilm.com/film/kokuho/",
+    "A FOGGY TALE": "https://www.fareastfilm.com/film/a-foggy-tale/",
+    "HIJACKED": "https://www.fareastfilm.com/film/hijacked/",
+    "NIGHT KING": "https://www.fareastfilm.com/film/night-king/",
+    "SOMEONE LIKE ME": "https://www.fareastfilm.com/film/someone-like-me/",
+    "FILIPIÑANA": "https://www.fareastfilm.com/film/filipinana/",
+    "THE WORLD OF LOVE": "https://www.fareastfilm.com/film/the-world-of-love/",
+    "THE SEOUL GUARDIANS": "https://www.fareastfilm.com/film/the-seoul-guardians/",
+    "KY NAM INN": "https://www.fareastfilm.com/film/ky-nam-inn/",
+    "ROAD TO VENDETTA": "https://www.fareastfilm.com/film/road-to-vendetta/",
+    "THE LAST BLOSSOM": "https://www.fareastfilm.com/film/the-last-blossom/",
+    "TAKE OFF": "https://www.fareastfilm.com/film/take-off/",
+    "THE SICKNESS UNTO LOVE": "https://www.fareastfilm.com/film/the-sickness-unto-love/",
+    "DEEP QUIET ROOM": "https://www.fareastfilm.com/film/deep-quiet-room/",
+    "JET LAG IN SUMMER": "https://www.fareastfilm.com/film/jet-lag-in-summer/",
+    "MY NAME": "https://www.fareastfilm.com/film/my-name/",
+    "SUZUKI = BAKUDAN": "https://www.fareastfilm.com/film/suzukibakudan/",
+    "A MIGHTY ADVENTURE": "https://www.fareastfilm.com/film/a-mighty-adventure/",
+    "MIDNIGHT GIRLS": "https://www.fareastfilm.com/film/midnight-girls/",
+    "TIGER": "https://www.fareastfilm.com/film/tiger/",
+    "SUNSHINE WOMEN'S CHOIR": "https://www.fareastfilm.com/film/sunshine-women-s-choir/",
+    "90 METERS": "https://www.fareastfilm.com/film/90-meters/",
+    "THE SHADOW'S EDGE": "https://www.fareastfilm.com/film/the-shadow-s-edge/",
+    "ANOTHER WORLD": "https://www.fareastfilm.com/film/another-world/",
+    "ONCE WE WERE US": "https://www.fareastfilm.com/film/once-we-were-us/",
+    "UNCHAINED": "https://www.fareastfilm.com/film/unchained/",
+    "MEASURE IN LOVE": "https://www.fareastfilm.com/film/measure-in-love/",
+    "NUMBER ONE": "https://www.fareastfilm.com/film/number-one/",
+    "ALL GREENS": "https://www.fareastfilm.com/film/all-greens/",
+    "UNIDENTIFIED MURDER": "https://www.fareastfilm.com/film/unidentified-murder/",
+    "THE FOX KING": "https://www.fareastfilm.com/film/the-fox-king/",
+    "TOKYO TAXI": "https://www.fareastfilm.com/film/tokyo-taxi/",
+    "DOPAMINE": "https://www.fareastfilm.com/film/dopamine/",
+    "THE OLD MAN AND HIS CAR": "https://www.fareastfilm.com/film/the-old-man-and-his-car/",
+    "THE KING'S WARDEN": "https://www.fareastfilm.com/film/the-king-s-warden/",
+    "MOTHER BHUMI": "https://www.fareastfilm.com/film/mother-bhumi/",
+    "TUNNELS: SUN IN THE DARK": "https://www.fareastfilm.com/film/tunnels-sun-in-the-dark/",
+    "THE LAST SHOT": "https://www.fareastfilm.com/film/the-last-shot/",
+    "A WRITER'S ODYSSEY 2": "https://www.fareastfilm.com/film/a-writer-s-odyssey-2/",
+    "CIAO UFO": "https://www.fareastfilm.com/film/ciao-ufo/",
+    "GOHAN": "https://www.fareastfilm.com/film/gohan/",
+    "UNEXPECTED FAMILY": "https://www.fareastfilm.com/film/unexpected-family/",
+    "BLADES OF THE GUARDIANS: WIND RISES IN THE DESERT": "https://www.fareastfilm.com/film/blades-of-the-guardians-wind-rises-in-the-desert/",
+    "BLOOD MOON RITE 8": "https://www.fareastfilm.com/film/blood-moon-rite-8/"
+  };
+
+const DURATIONS = {
+    "HULA GIRLS": 121,
+    "UNDER THE OPEN SKY": 126,
+    "WE ARE ALL STRANGERS": 157,
+    "KUNG FU": 127,
+    "THE SNOWBALL ON A SUNNY DAY": 131,
+    "AH GIRL": 99,
+    "5 CENTIMETERS PER SECOND": 121,
+    "WE'RE NOTHING AT ALL": 128,
+    "PERFECT DAYS": 124,
+    "GHOST IN THE CELL": 106,
+    "THA RAE: THE EXORCIST": 119,
+    "LINKA LINKA": 100,
+    "FUJIKO": 95,
+    "I BLEW OUT THE CANDLES BEFORE MAKING A WISH": 116,
+    "KOKUHO": 175,
+    "A FOGGY TALE": 134,
+    "HIJACKED": 118,
+    "NIGHT KING": 133,
+    "SOMEONE LIKE ME": 106,
+    "FILIPIÑANA": 100,
+    "THE WORLD OF LOVE": 119,
+    "THE SEOUL GUARDIANS": 70,
+    "KY NAM INN": 140,
+    "ROAD TO VENDETTA": 117,
+    "THE LAST BLOSSOM": 90,
+    "TAKE OFF": 122,
+    "THE SICKNESS UNTO LOVE": 109,
+    "DEEP QUIET ROOM": 108,
+    "JET LAG IN SUMMER": 93,
+    "MY NAME": 113,
+    "SUZUKI = BAKUDAN": 136,
+    "A MIGHTY ADVENTURE": 77,
+    "MIDNIGHT GIRLS": 104,
+    "TIGER": 126,
+    "SUNSHINE WOMEN'S CHOIR": 134,
+    "90 METERS": 115,
+    "THE SHADOW'S EDGE": 142,
+    "ANOTHER WORLD": 111,
+    "ONCE WE WERE US": 115,
+    "UNCHAINED": 106,
+    "MEASURE IN LOVE": 112,
+    "NUMBER ONE": 105,
+    "ALL GREENS": 119,
+    "UNIDENTIFIED MURDER": 85,
+    "THE FOX KING": 94,
+    "TOKYO TAXI": 103,
+    "DOPAMINE": 94,
+    "THE OLD MAN AND HIS CAR": 82,
+    "THE KING'S WARDEN": 117,
+    "MOTHER BHUMI": 129,
+    "TUNNELS: SUN IN THE DARK": 126,
+    "THE LAST SHOT": 113,
+    "A WRITER'S ODYSSEY 2": 133,
+    "CIAO UFO": 122,
+    "GOHAN": 140,
+    "UNEXPECTED FAMILY": 121,
+    "BLADES OF THE GUARDIANS: WIND RISES IN THE DESERT": 125,
+    "BLOOD MOON RITE 8": 130
+  };
+
+const COMPETITION_STATUS = {
+    "HULA GIRLS": "fuori concorso",
+    "UNDER THE OPEN SKY": "fuori concorso",
+    "WE ARE ALL STRANGERS": "in concorso",
+    "KUNG FU": "in concorso",
+    "THE SNOWBALL ON A SUNNY DAY": "in concorso",
+    "AH GIRL": "in concorso",
+    "5 CENTIMETERS PER SECOND": "in concorso",
+    "WE'RE NOTHING AT ALL": "in concorso",
+    "PERFECT DAYS": "fuori concorso",
+    "GHOST IN THE CELL": "in concorso",
+    "THA RAE: THE EXORCIST": "in concorso",
+    "LINKA LINKA": "in concorso",
+    "FUJIKO": "in concorso",
+    "I BLEW OUT THE CANDLES BEFORE MAKING A WISH": "in concorso",
+    "KOKUHO": "fuori concorso",
+    "A FOGGY TALE": "in concorso",
+    "HIJACKED": "in concorso",
+    "NIGHT KING": "in concorso",
+    "SOMEONE LIKE ME": "in concorso",
+    "FILIPIÑANA": "in concorso",
+    "THE WORLD OF LOVE": "in concorso",
+    "THE SEOUL GUARDIANS": "in concorso",
+    "KY NAM INN": "in concorso",
+    "ROAD TO VENDETTA": "in concorso",
+    "THE LAST BLOSSOM": "in concorso",
+    "TAKE OFF": "in concorso",
+    "THE SICKNESS UNTO LOVE": "in concorso",
+    "DEEP QUIET ROOM": "in concorso",
+    "JET LAG IN SUMMER": "in concorso",
+    "MY NAME": "in concorso",
+    "SUZUKI = BAKUDAN": "in concorso",
+    "A MIGHTY ADVENTURE": "in concorso",
+    "MIDNIGHT GIRLS": "in concorso",
+    "TIGER": "in concorso",
+    "SUNSHINE WOMEN'S CHOIR": "in concorso",
+    "90 METERS": "in concorso",
+    "THE SHADOW'S EDGE": "in concorso",
+    "ANOTHER WORLD": "in concorso",
+    "ONCE WE WERE US": "in concorso",
+    "UNCHAINED": "in concorso",
+    "MEASURE IN LOVE": "in concorso",
+    "NUMBER ONE": "in concorso",
+    "ALL GREENS": "in concorso",
+    "UNIDENTIFIED MURDER": "in concorso",
+    "THE FOX KING": "in concorso",
+    "TOKYO TAXI": "fuori concorso",
+    "DOPAMINE": "in concorso",
+    "THE OLD MAN AND HIS CAR": "in concorso",
+    "THE KING'S WARDEN": "in concorso",
+    "MOTHER BHUMI": "in concorso",
+    "TUNNELS: SUN IN THE DARK": "in concorso",
+    "THE LAST SHOT": "in concorso",
+    "A WRITER'S ODYSSEY 2": "in concorso",
+    "CIAO UFO": "fuori concorso",
+    "GOHAN": "in concorso",
+    "UNEXPECTED FAMILY": "in concorso",
+    "BLADES OF THE GUARDIANS: WIND RISES IN THE DESERT": "in concorso",
+    "BLOOD MOON RITE 8": "in concorso"
+  };
+
+// State
+let currentUser = localStorage.getItem('feff28_user') || '';
+let allVotes = {};   // { filmKey: { userName: stars } }
+let currentDay = 0;
+let synOpen = {};
+
+const configured = JSONBIN_API_KEY !== 'JSONBIN_API_KEY' && JSONBIN_BIN_ID !== 'JSONBIN_BIN_ID';
+
+function filmKey(dayIdx, filmIdx) { return `d${dayIdx}_f${filmIdx}`; }
+
+// ─── Sync ───────────────────────────────────────────
+function setSyncStatus(state, label) {
+  const dot = document.getElementById('syncDot');
+  const lbl = document.getElementById('syncLabel');
+  dot.className = 'sync-dot ' + state;
+  lbl.textContent = label;
+}
+
+async function loadVotes() {
+  if (!configured) { setSyncStatus('err','non configurato'); return; }
+  // Mostra subito la cache locale, poi aggiorna in background
+  const cached = localStorage.getItem('feff28_votes_cache');
+  if (cached) { try { allVotes = JSON.parse(cached); renderAll(); } catch(e){} }
+  setSyncStatus('loading','aggiornamento…');
+  try {
+    const r = await fetch(BASE_URL + '/latest', { headers: {'X-Master-Key': JSONBIN_API_KEY} });
+    if (!r.ok) throw new Error(r.status);
+    const data = await r.json();
+    allVotes = data.record.votes || {};
+    localStorage.setItem('feff28_votes_cache', JSON.stringify(allVotes));
+    setSyncStatus('ok','sincronizzato');
+    renderAll();
+    buildNav();
+  } catch(e) {
+    setSyncStatus('err','errore rete');
+  }
+}
+
+// Deep merge: remote wins on conflict except for current user's own keys
+function mergeVotes(remote, local) {
+  const merged = JSON.parse(JSON.stringify(remote)); // deep clone remote
+  for (const filmKey in local) {
+    if (!merged[filmKey]) merged[filmKey] = {};
+    for (const userKey in local[filmKey]) {
+      // Only overwrite keys that belong to current user or don't exist remotely
+      if (userKey === currentUser ||
+          userKey.endsWith('__' + currentUser) ||
+          userKey.startsWith('__note__' + currentUser) ||
+          userKey.startsWith('__notepub__' + currentUser) ||
+          userKey.startsWith('__book__' + currentUser) ||
+          !(userKey in merged[filmKey])) {
+        merged[filmKey][userKey] = local[filmKey][userKey];
+      }
+    }
+  }
+  // Remove empty film keys
+  for (const k in merged) {
+    if (Object.keys(merged[k]).length === 0) delete merged[k];
+  }
+  return merged;
+}
+
+let _saveQueue = Promise.resolve();
+
+async function saveVotes() {
+  if (!configured) return;
+  // Queue saves sequentially to avoid parallel writes
+  _saveQueue = _saveQueue.then(async () => {
+    setSyncStatus('loading', 'salvataggio…');
+    try {
+      // 1. Read current remote state
+      const getRes = await fetch(BASE_URL + '/latest', { headers: { 'X-Master-Key': JSONBIN_API_KEY } });
+      if (!getRes.ok) throw new Error('read failed');
+      const remote = await getRes.json();
+      const remoteVotes = remote.record.votes || {};
+
+      // 2. Merge: remote base + our local changes
+      const merged = mergeVotes(remoteVotes, allVotes);
+
+      // 3. Write merged result
+      const putRes = await fetch(BASE_URL, {
+        method: 'PUT',
+        headers: HEADERS,
+        body: JSON.stringify({ votes: merged })
+      });
+      if (!putRes.ok) throw new Error('write failed');
+
+      // 4. Update local state with merged result
+      allVotes = merged;
+      localStorage.setItem('feff28_votes_cache', JSON.stringify(allVotes));
+      setSyncStatus('ok', 'salvato');
+      renderAll();
+      buildNav();
+    } catch(e) {
+      setSyncStatus('err', 'errore salvataggio');
+      console.error('saveVotes error:', e);
+    }
+  });
+  return _saveQueue;
+}
+
+function refreshData() { loadVotes(); }
+
+// ─── User ────────────────────────────────────────────
+function setUser() {
+  const val = document.getElementById('nameInput').value.trim();
+  if (!val) return;
+  currentUser = val;
+  localStorage.setItem('feff28_user', val);
+  showUserBadge();
+  renderAll();
+}
+function changeUser() {
+  currentUser = '';
+  localStorage.removeItem('feff28_user');
+  document.getElementById('userBadge').classList.remove('visible');
+  document.getElementById('loginBar').style.display = 'flex';
+  document.getElementById('nameInput').value = '';
+}
+function showUserBadge() {
+  document.getElementById('loginBar').style.display = 'none';
+  const badge = document.getElementById('userBadge');
+  badge.classList.add('visible');
+  document.getElementById('userAvatar').textContent = initials(currentUser);
+  document.getElementById('userAvatar').style.background = avatarColor(currentUser);
+  document.getElementById('userNameLabel').textContent = currentUser;
+}
+
+// ─── Rating ──────────────────────────────────────────
+function rate(dayIdx, filmIdx, stars) {
+  if (!currentUser) { showToast('Inserisci prima il tuo nome ↑'); return; }
+  const key = filmKey(dayIdx, filmIdx);
+  if (!allVotes[key]) allVotes[key] = {};
+  const current = allVotes[key][currentUser] || 0;
+  if (current === stars) {
+    delete allVotes[key][currentUser];
+    if (Object.keys(allVotes[key]).length === 0) delete allVotes[key];
+  } else {
+    allVotes[key][currentUser] = stars;
+  }
+  localStorage.setItem('feff28_votes_cache', JSON.stringify(allVotes));
+  renderAll();
+  saveVotes();
+}
+
+// ─── Event delegation (fixes iOS tap on re-rendered stars) ───
+document.addEventListener('click', function(e) {
+  if (e.target.closest('.btn-unseen')) return; // handled separately below
+  const star = e.target.closest('[data-rate]');
+  if (star) {
+    rate(+star.dataset.day, +star.dataset.film, +star.dataset.rate);
+    return;
+  }
+  const syn = e.target.closest('[data-syn]');
+  if (syn) {
+    toggleSyn(syn.dataset.syn);
+  }
+});
+
+// ─── Render ───────────────────────────────────────────
+function buildNav() {
+  const nav = document.getElementById('dayNav');
+  const dayTabs = films.map((d,i) => {
+    let booked = 0;
+    if (currentUser) {
+      d.films.forEach((f, fi) => {
+        const key = filmKey(i, fi);
+        if (allVotes[key] && allVotes[key][`__book__${currentUser}`] === true) {
+          // Only count if film hasn't ended yet
+          const now = new Date();
+          const festStart = new Date(2026, 3, 24);
+          const festEnd   = new Date(2026, 4, 3);
+          if (now < festStart || now >= festEnd) { booked++; return; }
+          const dur = DURATIONS[f.title] || 120;
+          const [h,m] = f.t.split(':').map(Number);
+          const festDate = new Date(festStart.getTime() + i * 86400000);
+          const end = new Date(festDate.getFullYear(), festDate.getMonth(), festDate.getDate(), h, m + dur);
+          if (now <= end) booked++;
+        }
+      });
+    }
+    const badge = booked > 0 ? `<span class="tab-badge">${booked}</span>` : '';
+    return `<div class="day-tab ${i===0?'active':''}" onclick="switchDay(${i})">${d.label}${badge}</div>`;
+  }).join('');
+  nav.innerHTML = dayTabs + `<div class="day-tab tab-rank" onclick="switchDay(${films.length})">Classifica</div>` + `<div class="day-tab" onclick="switchDay(${films.length}+1)">Le mie stats</div>`;
+}
+
+function switchDay(i) {
+  currentDay = i;
+  document.querySelectorAll('.day-tab').forEach((t,j) => t.classList.toggle('active', j===i));
+  document.querySelectorAll('.day-section').forEach((s,j) => s.classList.toggle('active', j===i));
+  const rs = document.getElementById('rank-section');
+  if (rs) rs.style.display = (i === films.length) ? 'block' : 'none';
+  const ss = document.getElementById('stats-section');
+  if (ss) ss.style.display = (i === films.length+1) ? 'block' : 'none';
+}
+
+function renderAll() {
+  const main = document.getElementById('main');
+  main.innerHTML = films.map((day, di) => {
+    const filmsHtml = day.films.map((f, fi) => {
+      const key = filmKey(di, fi);
+      const myRating = currentUser && allVotes[key] ? (allVotes[key][currentUser] || 0) : 0;
+      const otherVotes = allVotes[key] ? Object.entries(allVotes[key]).filter(([k,v]) => typeof v === 'number') : [];
+      const starsHtml = [1,2,3,4,5].map(s =>
+        `<span class="star ${myRating>=s?'on':''}" data-rate="${s}" data-day="${di}" data-film="${fi}">★</span>`
+      ).join('');
+      const otherHtml = otherVotes.length > 0 ? `<div class="votes-row">${
+        otherVotes.map(([name,stars]) => `
+          <div class="vote-chip">
+            <div class="vote-chip-avatar" style="background:${avatarColor(name)}">${initials(name)}</div>
+            <span class="vote-chip-name">${name.split(' ')[0]}</span>
+            <span class="vote-chip-stars">${'★'.repeat(stars)}</span>
+          </div>`).join('')
+      }</div>` : '';
+      const isBooked = currentUser && allVotes[key] ? (allVotes[key][`__book__${currentUser}`] === true) : false;
+      const isPast = (() => {
+        const now = new Date();
+        const festStart = new Date(2026, 3, 24); // Apr 24
+        const festEnd   = new Date(2026, 4, 3);  // May 3
+        // Only mark as past during the festival itself
+        if (now < festStart || now >= festEnd) return false;
+        const dur = DURATIONS[f.title] || 120;
+        const [h,m] = f.t.split(':').map(Number);
+        // Use the actual festival date for this day slot
+        const festDate = new Date(festStart.getTime() + di * 86400000);
+        const end = new Date(festDate.getFullYear(), festDate.getMonth(), festDate.getDate(), h, m + dur);
+        return now > end;
+      })();
+      const serialNum = String(Math.abs((di*100+fi)*7919 % 99999)).padStart(5,'0');
+      const noteKey = `feff28_note_${currentUser}_${key}`;
+      const notePrivacyKey = `feff28_notepub_${currentUser}_${key}`;
+      // isNotePublic: default TRUE. Only false if __notepub__ explicitly === false on JSONBin.
+      const remotePrivFlag = currentUser && allVotes[key] ? allVotes[key][`__notepub__${currentUser}`] : undefined;
+      const isNotePublic = remotePrivFlag !== false; // default public
+      // Read note: if public, from allVotes; if private, from localStorage
+      const noteValLocal = currentUser ? (localStorage.getItem(noteKey) || '') : '';
+      const noteValRemote = currentUser && allVotes[key] ? (allVotes[key][`__note__${currentUser}`] || '') : '';
+      const noteVal = isNotePublic ? noteValRemote : noteValLocal;
+      const noteHtml = currentUser ? `
+        <div class="note-header">
+          <span class="note-label">nota</span>
+          <button class="note-privacy-btn ${isNotePublic?'public':''}" data-nday="${di}" data-nfilm="${fi}">${isNotePublic?'🌐 pubblica':'🔒 privata'}</button>
+        </div>
+        <textarea class="note-area" data-notekey="${noteKey}" data-noteprivkey="${notePrivacyKey}" data-nday="${di}" data-nfilm="${fi}" data-ispublic="${isNotePublic?'1':'0'}" placeholder="${isNotePublic?'Nota pubblica — sincronizzata su tutti i dispositivi.':'Nota privata — salvata solo su questo dispositivo.'}" rows="2">${noteVal}</textarea>
+        <div class="note-footer">
+          <button class="note-save-btn" data-nday="${di}" data-nfilm="${fi}">salva nota</button>
+          ${isBooked ? `<div class="ticket-stamp"><svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="rough${di}${fi}" x="-30%" y="-30%" width="160%" height="160%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="4" seed="${di*fi+7}" result="noise"/>
+              <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G"/>
+            </filter>
+          </defs>
+          <g filter="url(#rough${di}${fi})" opacity="0.5">
+            <circle cx="40" cy="40" r="34" fill="none" stroke="#c0392b" stroke-width="3"/>
+            <circle cx="40" cy="40" r="27" fill="none" stroke="#c0392b" stroke-width="1"/>
+            <text x="40" y="33" text-anchor="middle" font-family="'Special Elite',serif" font-size="7.5" fill="#c0392b" letter-spacing="1.5">PRENOTATO</text>
+            <text x="40" y="45" text-anchor="middle" font-family="'Special Elite',serif" font-size="13" fill="#c0392b" letter-spacing="1">FEFF 28</text>
+            <text x="40" y="55" text-anchor="middle" font-family="'Special Elite',serif" font-size="6.5" fill="#c0392b" letter-spacing="1.5">UDINE 2026</text>
+          </g>
+        </svg></div>` : ''}
+        </div>` : '';
+      const synKey = key;
+      const synVisible = synOpen[synKey];
+      return `<div class="film-card${isBooked?' booked-card':''}${isBooked&&isPast?' past-card':''}">
+        <div class="film-main">
+          <div class="film-time-col">
+            <span class="film-time">${f.t}</span>
+            ${(() => {
+              const dur = DURATIONS[f.title];
+              if (!dur) return '';
+              const [h,m] = f.t.split(':').map(Number);
+              const end = new Date(2000,0,1,h,m+dur);
+              const eh = String(end.getHours()).padStart(2,'0');
+              const em = String(end.getMinutes()).padStart(2,'0');
+              return `<span class="film-end">~${eh}:${em}</span>`;
+            })()}
+            <span class="book-badge">✦ ADMIT ONE ✦</span>
+            ${isBooked ? `<span class="serial-num">N°${serialNum}</span>` : ''}
+          </div>
+          <div class="film-body">
+            <div class="film-title">${f.title}</div>
+            ${(()=>{ const s=COMPETITION_STATUS[f.title]; return s ? `<span class="comp-badge ${s==='in concorso'?'in':'out'}">${s}</span>` : ''; })()}
+            ${f.syn ? `<div class="film-synopsis-preview ${synVisible?'open':''}" id="syn-${synKey}">${f.syn}${FILM_URLS[f.title] ? `<a class="feff-link" href="${FILM_URLS[f.title]}" target="_blank" rel="noopener">scheda completa ↗</a>` : ''}</div>` : ''}
+            <div class="film-actions">
+              <div class="stars">${starsHtml}</div>
+              ${f.syn ? `<button class="toggle-syn" data-syn="${synKey}">${synVisible?'nascondi ▲':'trama ▼'}</button>` : ''}
+              ${currentUser ? `<button class="btn-book${isBooked?' booked':''}" data-uday="${di}" data-ufilm="${fi}" title="${isBooked?'rimuovi prenotazione':'segna come prenotato'}">${isBooked?'🎟':'🎫'}</button>` : ''}
+            </div>
+            ${otherHtml}
+            ${noteHtml}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="day-section ${di===currentDay?'active':''}" id="day-${di}">
+      <div class="day-title">${day.day}</div>
+      <div class="day-subtitle">Teatro Nuovo · Sala 2</div>
+      ${filmsHtml}
+    </div>`;
+  }).join('');
+
+  // Ranking section
+  let rs = document.getElementById('rank-section');
+  if (!rs) {
+    rs = document.createElement('div');
+    rs.id = 'rank-section';
+    rs.className = 'rank-section';
+    main.appendChild(rs);
+  }
+  rs.style.display = (currentDay === films.length) ? 'block' : 'none';
+  renderRanking(rs);
+
+  // Stats section
+  let ss = document.getElementById('stats-section');
+  if (!ss) {
+    ss = document.createElement('div');
+    ss.id = 'stats-section';
+    ss.className = 'stats-section';
+    main.appendChild(ss);
+  }
+  ss.style.display = (currentDay === films.length+1) ? 'block' : 'none';
+  renderStats(ss);
+}
+
+function renderRanking(container) {
+  // Build ranked list from allVotes
+  const ranked = [];
+  films.forEach((day, di) => {
+    day.films.forEach((f, fi) => {
+      const key = filmKey(di, fi);
+      const votes = allVotes[key] ? Object.values(allVotes[key]).filter(v => typeof v === 'number') : [];
+      if (votes.length === 0) return;
+      const avg = votes.reduce((a,b) => a+b, 0) / votes.length;
+      ranked.push({ title: f.title, day: day.day, avg, count: votes.length });
+    });
+  });
+  ranked.sort((a,b) => b.avg - a.avg || b.count - a.count);
+
+  if (ranked.length === 0) {
+    container.innerHTML = `
+      <div class="rank-title">Classifica</div>
+      <div class="rank-subtitle">Media voti · aggiornamento in tempo reale</div>
+      <div class="rank-empty">Nessun voto ancora — inizia a votare!</div>`;
+    return;
+  }
+
+  const medals = ['gold','silver','bronze'];
+  const rows = ranked.map((r,i) => {
+    const cls = medals[i] || '';
+    const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}`;
+    const barW = Math.round((r.avg/5)*100);
+    return `<div class="rank-row ${cls}">
+      <div class="rank-pos">${medal}</div>
+      <div class="rank-info">
+        <div class="rank-film">${r.title}</div>
+        <div class="rank-day">${r.day}</div>
+      </div>
+      <div class="rank-bar-wrap"><div class="rank-bar" style="width:${barW}%"></div></div>
+      <div class="rank-score">
+        <div class="rank-avg">${r.avg.toFixed(1)}</div>
+        <div class="rank-count">${r.count} vot${r.count===1?'o':'i'}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="rank-title">Classifica</div>
+    <div class="rank-subtitle">Media voti · ${ranked.length} film votati</div>
+    ${rows}`;
+}
+
+function toggleSyn(key) {
+  synOpen[key] = !synOpen[key];
+  renderAll();
+}
+
+// ─── Prossimo film + countdown WEAS ──────────────────
+function formatCountdown(ms) {
+  if (ms <= 0) return null;
+  const totalMin = Math.floor(ms / 60000);
+  const days = Math.floor(totalMin / 1440);
+  const hrs  = Math.floor((totalMin % 1440) / 60);
+  const mins = totalMin % 60;
+  if (days > 0) return `${days}g ${hrs}h ${String(mins).padStart(2,'0')}m`;
+  if (hrs > 0)  return `${hrs}h ${String(mins).padStart(2,'0')}m`;
+  return `${mins} min`;
+}
+
+function updateNextFilm() {
+  const bar = document.getElementById('nextFilmBar');
+  const titleEl = document.getElementById('nextFilmTitle');
+  const timeEl = document.getElementById('nextFilmTime');
+  if (!bar) return;
+  const now = new Date();
+  const festStart = new Date(2026, 3, 24);
+  const festEnd   = new Date(2026, 4, 3);
+
+  // After festival: hide
+  if (now >= festEnd) { bar.classList.add('hidden'); return; }
+
+  // Scan ALL festival days looking for next upcoming film (booked preferred)
+  let booked = null, any = null;
+
+  for (let di = 0; di < films.length; di++) {
+    const festDate = new Date(2026, 3, 24 + di); // Apr 24 + di days
+    for (let fi = 0; fi < films[di].films.length; fi++) {
+      const f = films[di].films[fi];
+      const [h,m] = f.t.split(':').map(Number);
+      const filmTime = new Date(festDate.getFullYear(), festDate.getMonth(), festDate.getDate(), h, m);
+      if (filmTime <= now) continue; // already started or passed
+
+      const diffMs = filmTime - now;
+      const diffMin = Math.round(diffMs / 60000);
+      const diffStr = diffMin < 60
+        ? `tra ${diffMin} min`
+        : diffMin < 1440
+          ? `tra ${Math.floor(diffMin/60)}h${String(diffMin%60).padStart(2,'0')}`
+          : formatCountdown(diffMs);
+
+      const dayLabel = films[di].label;
+      const candidate = { title: f.title, start: f.t, day: dayLabel, diff: diffStr, sameDay: di === Math.floor((now - festStart) / 86400000) };
+
+      if (!any) any = candidate;
+
+      if (!booked && currentUser) {
+        const key = filmKey(di, fi);
+        if (allVotes[key] && allVotes[key][`__book__${currentUser}`] === true) booked = candidate;
+      }
+
+      // Once we have both candidates stop scanning this day
+      if (any && (booked || !currentUser)) break;
+    }
+    // If we found what we need stop scanning days
+    if (any && (booked || !currentUser)) break;
+  }
+
+  const found = booked || any;
+  const isBooked = !!booked && found === booked;
+
+  if (found) {
+    bar.classList.remove('hidden');
+    titleEl.textContent = (isBooked ? '🎟 ' : '') + found.title;
+    timeEl.textContent = found.diff;
+  } else {
+    bar.classList.add('hidden');
+  }
+}
+
+// ─── Notes ───────────────────────────────────────────
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.note-save-btn');
+  if (!btn) return;
+  e.stopPropagation();
+  if (!currentUser) return;
+  const di = +btn.dataset.nday, fi = +btn.dataset.nfilm;
+  const key = filmKey(di, fi);
+  // Find the textarea in the same card
+  const card = btn.closest('.film-body');
+  const ta = card ? card.querySelector('.note-area') : null;
+  if (!ta) return;
+  const text = ta.value;
+  const isPublic = ta.dataset.ispublic === '1';
+  if (isPublic) {
+    if (!allVotes[key]) allVotes[key] = {};
+    // public is default — no flag needed
+    if (text) allVotes[key][`__note__${currentUser}`] = text;
+    else { delete allVotes[key][`__note__${currentUser}`]; }
+    localStorage.setItem('feff28_votes_cache', JSON.stringify(allVotes));
+    saveVotes();
+  } else {
+    if (text) localStorage.setItem(ta.dataset.notekey, text);
+    else localStorage.removeItem(ta.dataset.notekey);
+    // Extra safety: ensure nothing leaks to JSONBin
+    if (allVotes[key]) {
+      delete allVotes[key][`__note__${currentUser}`];
+      if (!Object.keys(allVotes[key]).length) delete allVotes[key];
+      localStorage.setItem('feff28_votes_cache', JSON.stringify(allVotes));
+      saveVotes();
+    }
+  }
+  btn.textContent = '✓ salvato';
+  btn.classList.add('saved');
+  setTimeout(() => { btn.textContent = 'salva nota'; btn.classList.remove('saved'); }, 2000);
+});
+
+// ─── Note privacy toggle ──────────────────────────────
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.note-privacy-btn');
+  if (!btn) return;
+  e.stopPropagation();
+  if (!currentUser) return;
+  const di = btn.dataset.nday, fi = btn.dataset.nfilm;
+  const key = filmKey(+di, +fi);
+  const privKey = `feff28_notepub_${currentUser}_${key}`;
+  const noteKey = `feff28_note_${currentUser}_${key}`;
+  const wasPublic = localStorage.getItem(privKey) === '1';
+  const newPublic = !wasPublic;
+  localStorage.setItem(privKey, newPublic ? '1' : '0');
+  if (!allVotes[key]) allVotes[key] = {};
+  if (newPublic) {
+    // moving private→public: remove private flag, migrate text to allVotes
+    delete allVotes[key][`__notepub__${currentUser}`];
+    const localText = localStorage.getItem(noteKey) || '';
+    if (localText) allVotes[key][`__note__${currentUser}`] = localText;
+    if (!Object.keys(allVotes[key]).length) delete allVotes[key];
+  } else {
+    // moving public→private: set flag to false, migrate text to localStorage, WIPE from allVotes
+    allVotes[key][`__notepub__${currentUser}`] = false;
+    const remoteText = allVotes[key][`__note__${currentUser}`] || '';
+    if (remoteText) localStorage.setItem(noteKey, remoteText);
+    delete allVotes[key][`__note__${currentUser}`]; // ensures nothing remains on JSONBin
+  }
+  localStorage.setItem('feff28_votes_cache', JSON.stringify(allVotes));
+  saveVotes();
+  renderAll();
+});
+
+// ─── Booked toggle (synced on JSONBin) ───────────────
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.btn-book');
+  if (!btn) return;
+  e.stopPropagation();
+  if (!currentUser) { showToast('Inserisci prima il tuo nome ↑'); return; }
+  const di = btn.dataset.uday, fi = btn.dataset.ufilm;
+  if (di === undefined || fi === undefined) return;
+  const key = filmKey(+di, +fi);
+  if (!allVotes[key]) allVotes[key] = {};
+  const isNow = allVotes[key][`__book__${currentUser}`] === true;
+  if (isNow) {
+    delete allVotes[key][`__book__${currentUser}`];
+    if (!Object.keys(allVotes[key]).length) delete allVotes[key];
+  } else {
+    allVotes[key][`__book__${currentUser}`] = true;
+  }
+  localStorage.setItem('feff28_votes_cache', JSON.stringify(allVotes));
+  renderAll();
+  buildNav();
+  updateNextFilm();
+  saveVotes();
+});
+
+// ─── Stats ────────────────────────────────────────────
+function getPersonStats(name) {
+  const totalFilms = films.reduce((a,d) => a + d.films.length, 0);
+  let voted = 0, ratingSum = 0, unseen = 0;
+  let bestR = 0, bestTitles = [];
+  const byDay = films.map((day, di) => {
+    let dayVoted = 0, daySum = 0;
+    day.films.forEach((f, fi) => {
+      const key = filmKey(di, fi);
+      const val = allVotes[key] ? allVotes[key][name] : undefined;
+      if (typeof val !== 'number') return;
+      const r = val || 0;
+      if (r > 0) {
+        voted++; ratingSum += r;
+        dayVoted++; daySum += r;
+        if (r > bestR) { bestR = r; bestTitles = [f.title]; }
+        else if (r === bestR) { bestTitles.push(f.title); }
+      }
+    });
+    return { label: day.label, voted: dayVoted, total: day.films.length, avg: dayVoted > 0 ? daySum/dayVoted : null };
+  });
+  const avg = voted > 0 ? ratingSum / voted : null;
+  const pct = Math.round((voted / totalFilms) * 100);
+  return { name, voted, totalFilms, avg, pct, byDay, bestTitles, bestR };
+}
+
+function renderStats(container) {
+  // Collect all voters from allVotes
+  const voterSet = new Set();
+  films.forEach((day, di) => day.films.forEach((f, fi) => {
+    Object.entries(allVotes[filmKey(di, fi)] || {}).forEach(([n,v]) => {
+      if (typeof v === 'number') voterSet.add(n);
+    });
+  }));
+  // current user always first if present
+  const voters = currentUser
+    ? [currentUser, ...[...voterSet].filter(n => n !== currentUser)]
+    : [...voterSet];
+
+  if (voters.length === 0) {
+    container.innerHTML = `<div class="stats-title">Stats</div><div class="stats-empty">Nessun voto ancora.</div>`;
+    return;
+  }
+
+  const stats = voters.map(getPersonStats);
+  const totalFilms = stats[0].totalFilms;
+
+  // Header row with avatars
+  const thCols = stats.map(s => `
+    <th style="text-align:center;padding:6px 12px;min-width:80px;max-width:100px;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div style="width:28px;height:28px;border-radius:50%;background:${avatarColor(s.name)};display:flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:500;color:white;">${initials(s.name)}</div>
+        <span style="font-size:0.65rem;color:var(--ink);font-weight:500;">${s.name.split(' ')[0]}</span>
+      </div>
+    </th>`).join('');
+
+  // Summary rows
+  const rowVoted = stats.map(s => `<td style="text-align:center;">${s.voted}<span style="color:var(--muted);font-size:0.65rem;">/${totalFilms}</span></td>`).join('');
+  const rowPct   = stats.map(s => `<td style="text-align:center;">
+    <div style="display:flex;align-items:center;gap:4px;justify-content:center;">
+      <div class="stats-bar-wrap"><div class="stats-bar" style="width:${s.pct}%"></div></div>
+      ${s.pct}%
+    </div></td>`).join('');
+  const rowAvg   = stats.map(s => `<td style="text-align:center;font-family:'Playfair Display',serif;font-size:1rem;">${s.avg ? s.avg.toFixed(1) : '—'}</td>`).join('');
+  const rowBest  = stats.map(s => `<td style="text-align:center;font-size:0.62rem;line-height:1.5;max-width:90px;">${s.bestR > 0 ? s.bestTitles.map(t => t.split(' ').slice(0,3).join(' ')).join('<br>') : '—'}</td>`).join('');
+
+  // Per-day rows
+  const dayRows = films.map((day, di) => {
+    const cols = stats.map(s => {
+      const d = s.byDay[di];
+      return `<td style="text-align:center;">${d.voted > 0 ? `${d.voted}/<span style="color:var(--muted)">${d.total}</span>` : '<span style="color:var(--muted)">·</span>'}</td>`;
+    }).join('');
+    return `<tr><td style="color:var(--muted);font-size:0.65rem;white-space:nowrap;padding-right:16px;">${day.label}</td>${cols}</tr>`;
+  }).join('');
+
+  const colW = Math.max(52, Math.floor(200 / stats.length));
+
+  container.innerHTML = `
+    <div class="stats-title">Stats</div>
+    <div class="stats-subtitle">Confronto · ${voters.length} partecipant${voters.length===1?'e':'i'}</div>
+    <div style="overflow-x:auto;">
+    <table class="stats-day-table" style="width:auto;table-layout:auto;">
+      <thead>
+        <tr>
+          <th style="min-width:70px;"></th>
+          ${thCols}
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td style="color:var(--muted);font-size:0.65rem;">Film votati</td>${rowVoted}</tr>
+        <tr><td style="color:var(--muted);font-size:0.65rem;">Completamento</td>${rowPct}</tr>
+        <tr><td style="color:var(--muted);font-size:0.65rem;">Media voti</td>${rowAvg}</tr>
+        <tr><td style="color:var(--muted);font-size:0.65rem;">Film top</td>${rowBest}</tr>
+        <tr><td colspan="${stats.length+1}" style="padding-top:10px;padding-bottom:4px;font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);border-bottom:none;">Per giorno</td></tr>
+        ${dayRows}
+      </tbody>
+    </table>
+    </div>`;
+}
+
+// ─── Export ───────────────────────────────────────────
+function exportText() {
+  let txt = '🎬 FEFF 28 — Diario di visione\n';
+  txt += 'Udine, 24 apr – 2 mag 2026\n\n';
+  films.forEach((day, di) => {
+    txt += `━━━ ${day.day} ━━━\n`;
+    day.films.forEach((f, fi) => {
+      const key = filmKey(di, fi);
+      const votes = allVotes[key] || {};
+      const myR = currentUser ? (typeof votes[currentUser] === 'number' ? votes[currentUser] : 0) : 0;
+      const myStars = myR > 0 ? '★'.repeat(myR) + '☆'.repeat(5-myR) : '·····';
+      const others = Object.entries(votes).filter(([n,v]) =>
+        n !== currentUser && typeof v === 'number'
+      );
+      const othersStr = others.length ? ' | ' + others.map(([n,s])=>`${n.split(' ')[0]} ${'★'.repeat(s)}`).join(', ') : '';
+      // Note: prefer public (JSONBin) over private (localStorage)
+      const remoteNote = votes[`__note__${currentUser}`] || '';
+      const localNote = currentUser ? (localStorage.getItem(`feff28_note_${currentUser}_${key}`) || '') : '';
+      const note = remoteNote || localNote;
+      txt += `${f.t}  ${f.title}  ${myStars}${othersStr}\n`;
+      if (note) txt += `    ✏ ${note}\n`;
+    });
+    txt += '\n';
+  });
+  navigator.clipboard.writeText(txt).then(() => showToast('Copiato negli appunti ✓'));
+}
+
+function exportCSV() {
+  // Collect all voter names
+  const voters = new Set();
+  films.forEach((day, di) => day.films.forEach((f, fi) => {
+    Object.entries(allVotes[filmKey(di,fi)] || {}).forEach(([n,v]) => {
+      if (typeof v === 'number') voters.add(n); // only real voters, no internal keys
+    });
+  }));
+  const voterList = [...voters];
+
+  const esc = v => `"${String(v).replace(/"/g,'""')}"`;
+  const header = ['Giorno','Orario','Film', ...voterList.map(n => `Voto ${n}`)].map(esc).join(',');
+  const rows = [];
+  films.forEach((day, di) => {
+    day.films.forEach((f, fi) => {
+      const key = filmKey(di, fi);
+      const votes = allVotes[key] || {};
+      const votesCols = voterList.map(n => typeof votes[n] === 'number' ? votes[n] : '');
+      rows.push([day.day, f.t, f.title, ...votesCols].map(esc).join(','));
+    });
+  });
+  const csv = [header, ...rows].join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'feff28_voti.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV scaricato ✓');
+}
+
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ─── Dark mode ───────────────────────────────────────
+function toggleDark() {
+  const isDark = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('feff28_dark', isDark ? '1' : '0');
+  document.getElementById('darkToggle').textContent = isDark ? '☾' : '☀';
+}
+
+// ─── Init ─────────────────────────────────────────────
+if (!configured) document.getElementById('configNotice').classList.add('visible');
+if (localStorage.getItem('feff28_dark') === '1') {
+  document.documentElement.classList.add('dark');
+  document.getElementById('darkToggle').textContent = '☾';
+}
+if (currentUser) showUserBadge();
+buildNav();
+renderAll();
+loadVotes();
+updateNextFilm();
+setInterval(() => { updateNextFilm(); buildNav(); }, 60000);
+</script>
+</body>
+</html>
