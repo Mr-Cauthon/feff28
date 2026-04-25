@@ -910,6 +910,20 @@ font-size: 0.75rem;
 <div class="toast" id="toast"></div>
 
 <script>
+// ─── Visual error handler ─────────────────────────
+window.onerror = function(msg, src, line, col, err) {
+  const d = document.createElement('div');
+  d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#c0392b;color:#fff;padding:12px;font-size:13px;z-index:9999;font-family:monospace;';
+  d.textContent = '❌ ' + msg + ' (linea ' + line + ')';
+  document.body.appendChild(d);
+  return false;
+};
+window.addEventListener('unhandledrejection', function(e) {
+  const d = document.createElement('div');
+  d.style.cssText = 'position:fixed;top:40px;left:0;right:0;background:#8b2a20;color:#fff;padding:12px;font-size:13px;z-index:9999;font-family:monospace;';
+  d.textContent = '❌ Promise: ' + (e.reason?.message || e.reason || 'unknown');
+  document.body.appendChild(d);
+});
 // ═══════════════════════════════════════════════════
 // FIREBASE CONFIG
 // ═══════════════════════════════════════════════════
