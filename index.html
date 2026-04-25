@@ -910,6 +910,15 @@ font-size: 0.75rem;
 <div class="toast" id="toast"></div>
 
 <script>
+// ─── Visual debug log ────────────────────────────
+let _dbgY = 0;
+function dbg(msg, color) {
+  const d = document.createElement('div');
+  d.style.cssText = `position:fixed;top:${_dbgY}px;left:0;right:0;background:${color||'#333'};color:#fff;padding:6px 10px;font-size:11px;z-index:9999;font-family:monospace;opacity:0.92;`;
+  d.textContent = msg;
+  document.body.appendChild(d);
+  _dbgY += 26;
+}
 // ─── Visual error handler ─────────────────────────
 window.onerror = function(msg, src, line, col, err) {
   const d = document.createElement('div');
@@ -935,12 +944,12 @@ const configured = true;
 
 // Firebase REST helpers
 async function fbGet(path) {
-  const r = await fetch(`${FIREBASE_URL}/${path}.json?auth=${FIREBASE_API_KEY}`);
+  const r = await fetch(`${FIREBASE_URL}/${path}.json`);
   if (!r.ok) throw new Error('Firebase GET failed: ' + r.status);
   return r.json();
 }
 async function fbSet(path, value) {
-  const r = await fetch(`${FIREBASE_URL}/${path}.json?auth=${FIREBASE_API_KEY}`, {
+  const r = await fetch(`${FIREBASE_URL}/${path}.json`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(value)
@@ -949,7 +958,7 @@ async function fbSet(path, value) {
   return r.json();
 }
 async function fbPatch(path, value) {
-  const r = await fetch(`${FIREBASE_URL}/${path}.json?auth=${FIREBASE_API_KEY}`, {
+  const r = await fetch(`${FIREBASE_URL}/${path}.json`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(value)
@@ -958,7 +967,7 @@ async function fbPatch(path, value) {
   return r.json();
 }
 async function fbDelete(path) {
-  const r = await fetch(`${FIREBASE_URL}/${path}.json?auth=${FIREBASE_API_KEY}`, {
+  const r = await fetch(`${FIREBASE_URL}/${path}.json`, {
     method: 'DELETE'
   });
   if (!r.ok) throw new Error('Firebase DELETE failed: ' + r.status);
@@ -1884,17 +1893,24 @@ document.getElementById(‘darkToggle’).textContent = isDark ? ‘☾’ : ‘
 }
 
 // ─── Init ─────────────────────────────────────────────
+dbg(‘1. Init start’, ‘#2e6da4’);
 // Firebase configured — no notice needed
 if (localStorage.getItem(‘feff28_dark’) === ‘1’) {
 document.documentElement.classList.add(‘dark’);
 document.getElementById(‘darkToggle’).textContent = ‘☾’;
 }
+dbg(‘2. Dark mode OK’, ‘#2e6da4’);
 if (currentUser) showUserBadge();
+dbg(’3. User: ’ + (currentUser||‘none’), ‘#2e6da4’);
 buildNav();
+dbg(‘4. buildNav OK’, ‘#2e6da4’);
 renderAll();
+dbg(‘5. renderAll OK’, ‘#4a7c6f’);
 loadVotes();
+dbg(‘6. loadVotes called’, ‘#4a7c6f’);
 updateNextFilm();
 setInterval(() => { updateNextFilm(); buildNav(); }, 60000);
+dbg(‘7. Init complete’, ‘#4a7c6f’);
 </script>
 
 </body>
